@@ -1,0 +1,37 @@
+<nav class="navbar">
+  <div class="navbar-left">
+    <a href="/" class="navbar-logo">
+      <!-- You can replace with actual logo image -->
+      <span class="logo-mark">ER</span>
+      <span class="logo-text">Ella Rises</span>
+    </a>
+  </div>
+
+  <div class="navbar-center">
+    <a href="/" class="nav-link">Home</a>
+    <a href="/programs" class="nav-link">Programs</a>
+    <a href="/events" class="nav-link">Events</a>
+    <a href="/donate" class="nav-link">Donate</a>
+    <a href="/impact" class="nav-link">Impact</a>
+
+    <% if (currentUser) { %>
+      <a href="/dashboard" class="nav-link">Dashboard</a>
+      <a href="/participants" class="nav-link">Participants</a>
+      <a href="/events/admin" class="nav-link">Admin Events</a>
+      <a href="/surveys" class="nav-link">Surveys</a>
+      <a href="/milestones" class="nav-link">Milestones</a>
+      <a href="/donations" class="nav-link">Donations</a>
+    <% } %>
+  </div>
+
+  <div class="navbar-right">
+    <% if (!currentUser) { %>
+      <a href="/login" class="btn btn-outline">Login</a>
+    <% } else { %>
+      <span class="nav-user">Hi, <strong><%= currentUser.username %></strong> (<%= currentUser.role %>)</span>
+      <form action="/logout" method="POST" class="inline-form">
+        <button class="btn btn-accent">Logout</button>
+      </form>
+    <% } %>
+  </div>
+</nav>

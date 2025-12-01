@@ -1,0 +1,48 @@
+<%- include('../partials/header', { title: 'Events Admin', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Events</h1>
+      <p class="section-subtitle">Workshops, summits, and other Ella Rises events.</p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/events/new" class="btn btn-primary">Create Event</a>
+    <% } %>
+  </div>
+
+  <% if (!events || events.length === 0) { %>
+    <p>No events yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Event Name</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% events.forEach(e => { %>
+          <tr>
+            <td><a href="/events/<%= e.id %>"><%= e.name %></a></td>
+            <td><%= e.type %></td>
+            <td><%= e.dateFormatted %></td>
+            <td><%= e.location %></td>
+            <td class="table-actions">
+              <a href="/events/<%= e.id %>" class="link-small">View</a>
+              <% if (currentUser && currentUser.role === 'manager') { %>
+                | <a href="/events/<%= e.id %>/edit" class="link-small">Edit</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

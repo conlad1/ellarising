@@ -1,0 +1,52 @@
+<%- include('../partials/header', { title: 'Participants – Ella Rises Admin', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Participants</h1>
+      <p class="section-subtitle">
+        View and manage girls who have participated in Ella Rises events and programs.
+      </p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/participants/new" class="btn btn-primary">Add Participant</a>
+    <% } %>
+  </div>
+
+  <% if (!participants || participants.length === 0) { %>
+    <p>No participants yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>School</th>
+          <th>Grade</th>
+          <th>City</th>
+          <th>Milestones</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% participants.forEach(p => { %>
+          <tr>
+            <td><a href="/participants/<%= p.id %>"><%= p.first_name %> <%= p.last_name %></a></td>
+            <td><%= p.school || '-' %></td>
+            <td><%= p.grade || '-' %></td>
+            <td><%= p.city || '-' %></td>
+            <td><%= p.milestoneCount || 0 %></td>
+            <td class="table-actions">
+              <a href="/participants/<%= p.id %>" class="link-small">View</a>
+              <% if (currentUser && currentUser.role === 'manager') { %>
+                | <a href="/participants/<%= p.id %>/edit" class="link-small">Edit</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

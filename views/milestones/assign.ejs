@@ -1,0 +1,38 @@
+<%- include('../partials/header', { title: 'Assign Milestone', currentUser }) %>
+
+<section class="section">
+  <div class="card card-narrow">
+    <h1 class="section-title">Assign Milestone</h1>
+    <p class="section-subtitle">
+      Assign a milestone to <strong><%= participant.first_name %> <%= participant.last_name %></strong>.
+    </p>
+
+    <form action="/participants/<%= participant.id %>/milestones" method="POST" class="form">
+      <% if (typeof csrfToken !== 'undefined') { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+
+      <div class="form-group">
+        <label for="milestone_id">Milestone</label>
+        <select id="milestone_id" name="milestone_id" required>
+          <option value="">Select a milestone</option>
+          <% milestones.forEach(m => { %>
+            <option value="<%= m.id %>"><%= m.title %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="achieved_date">Achieved Date</label>
+        <input id="achieved_date" name="achieved_date" type="date">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Assign</button>
+        <a href="/participants/<%= participant.id %>" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

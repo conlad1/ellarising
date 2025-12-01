@@ -1,0 +1,34 @@
+<%- include('../partials/header', { title: 'Login – Ella Rises Portal', currentUser }) %>
+
+<section class="hero hero-small">
+  <div class="hero-inner">
+    <h1>Welcome back</h1>
+    <p>Log in to manage participants, events, surveys, milestones, and donations.</p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="card card-narrow">
+    <h2 class="section-title">Login</h2>
+    <form action="/login" method="POST" class="form">
+      <!-- Optional CSRF token -->
+      <% if (typeof csrfToken !== 'undefined') { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input id="username" name="username" type="text" required>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input id="password" name="password" type="password" required>
+      </div>
+
+      <button class="btn btn-primary btn-full">Log In</button>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

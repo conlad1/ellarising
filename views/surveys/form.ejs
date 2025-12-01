@@ -1,0 +1,64 @@
+<%- include('../partials/header', { title: formTitle || 'Survey Form', currentUser }) %>
+
+<section class="section">
+  <div class="card card-narrow">
+    <h1 class="section-title"><%= formTitle || 'Post-Event Survey' %></h1>
+
+    <form action="<%= formAction %>" method="POST" class="form">
+      <% if (typeof csrfToken !== 'undefined') { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+
+      <div class="form-group">
+        <label for="event_id">Event</label>
+        <select id="event_id" name="event_id" required>
+          <option value="">Select an event</option>
+          <% events.forEach(ev => { %>
+            <option value="<%= ev.id %>" <%= survey?.event_id === ev.id ? 'selected' : '' %>>
+              <%= ev.name %> – <%= ev.dateFormatted %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="participant_id">Participant</label>
+        <select id="participant_id" name="participant_id" required>
+          <option value="">Select a participant</option>
+          <% participants.forEach(p => { %>
+            <option value="<%= p.id %>" <%= survey?.participant_id === p.id ? 'selected' : '' %>>
+              <%= p.first_name %> <%= p.last_name %>
+            </option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="satisfaction">Satisfaction (1–5)</label>
+          <input id="satisfaction" name="satisfaction" type="number" min="1" max="5" value="<%= survey?.satisfaction || '' %>" required>
+        </div>
+        <div class="form-group">
+          <label for="usefulness">Usefulness (1–5)</label>
+          <input id="usefulness" name="usefulness" type="number" min="1" max="5" value="<%= survey?.usefulness || '' %>" required>
+        </div>
+        <div class="form-group">
+          <label for="recommendation">Recommend (1–10)</label>
+          <input id="recommendation" name="recommendation" type="number" min="1" max="10" value="<%= survey?.recommendation || '' %>" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="comments">Comments</label>
+        <textarea id="comments" name="comments" rows="4"><%= survey?.comments || '' %></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Save</button>
+        <a href="/surveys" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

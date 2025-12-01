@@ -1,0 +1,25 @@
+{
+  "name": "ellarising",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/conlad1/ellarising.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/conlad1/ellarising/issues"
+  },
+  "homepage": "https://github.com/conlad1/ellarising#readme",
+  "dependencies": {
+    "ejs": "^3.1.10",
+    "express": "^5.2.0"
+  }
+}

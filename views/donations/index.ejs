@@ -1,0 +1,60 @@
+<%- include('../partials/header', { title: 'Donations – Admin', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Donations</h1>
+      <p class="section-subtitle">
+        Track gifts given to support Ella Rises programs and events.
+      </p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/donations/new" class="btn btn-primary">Record Donation</a>
+    <% } %>
+  </div>
+
+  <div class="impact-highlight">
+    <div class="impact-card">
+      <h3>Total Donations</h3>
+      <p><strong>$<%= totals?.totalAmount || 0 %></strong></p>
+    </div>
+    <div class="impact-card">
+      <h3>Number of Gifts</h3>
+      <p><strong><%= totals?.count || 0 %></strong></p>
+    </div>
+  </div>
+
+  <% if (!donations || donations.length === 0) { %>
+    <p>No donations recorded yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Donor Name</th>
+          <th>Amount</th>
+          <th>Source</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% donations.forEach(d => { %>
+          <tr>
+            <td><%= d.dateFormatted %></td>
+            <td><%= d.donor_name || 'Anonymous' %></td>
+            <td>$<%= d.amount %></td>
+            <td><%= d.source || '-' %></td>
+            <td class="table-actions">
+              <% if (currentUser && currentUser.role === 'manager') { %>
+                <a href="/donations/<%= d.id %>/edit" class="link-small">Edit</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

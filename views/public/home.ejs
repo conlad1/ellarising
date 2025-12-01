@@ -1,0 +1,76 @@
+<%- include('../partials/header', { title: 'Ella Rises – Empowering Future Leaders', currentUser }) %>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <h1>Raising the next generation of women in STEAM & culture.</h1>
+      <p>
+        Ella Rises empowers young women to embrace their heritage, explore STEAM fields,
+        and grow as confident leaders through creative workshops, mentoring, and community.
+      </p>
+      <div class="hero-actions">
+        <a href="/programs" class="btn btn-primary">Explore Programs</a>
+        <a href="/donate" class="btn btn-outline">Support the Mission</a>
+      </div>
+    </div>
+    <div class="hero-image">
+      <!-- Replace with actual image if you want -->
+      <div class="hero-photo-placeholder">Ella Rises Photo</div>
+    </div>
+  </div>
+</section>
+
+<section class="section section-alt">
+  <div class="section-header">
+    <h2 class="section-title">What is Ella Rises?</h2>
+    <p class="section-subtitle">
+      We partner with schools and universities to provide creative, culturally-rooted experiences
+      that open doors to STEAM education and future careers.
+    </p>
+  </div>
+
+  <div class="grid grid-3">
+    <div class="card">
+      <h3>Workshops & Events</h3>
+      <p>Hands-on experiences in STEAM, art, and culture that help girls see themselves as creators and innovators.</p>
+    </div>
+    <div class="card">
+      <h3>Mentoring</h3>
+      <p>Real relationships with mentors who look like them, speak their language, and help them dream bigger.</p>
+    </div>
+    <div class="card">
+      <h3>Milestones that Matter</h3>
+      <p>From enrolling in advanced classes to declaring a major, we celebrate and track key academic milestones.</p>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-header">
+    <h2 class="section-title">Our Impact</h2>
+    <p class="section-subtitle">
+      This internal portal helps us track satisfaction, usefulness, and long-term successes like STEAM majors and careers.
+    </p>
+  </div>
+
+  <div class="impact-highlight">
+    <div class="impact-card">
+      <h3>Participants</h3>
+      <p><strong><%= impactStats?.participantsCount || '---' %></strong> girls engaged in our programs.</p>
+    </div>
+    <div class="impact-card">
+      <h3>Average Event Satisfaction</h3>
+      <p><strong><%= impactStats?.avgSatisfaction || '--' %>/5</strong> based on post-event surveys.</p>
+    </div>
+    <div class="impact-card">
+      <h3>Milestones Achieved</h3>
+      <p><strong><%= impactStats?.milestonesCount || '---' %></strong> tracked milestones toward education goals.</p>
+    </div>
+  </div>
+
+  <div class="center">
+    <a href="/impact" class="btn btn-primary">See more impact</a>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
