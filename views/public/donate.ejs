@@ -1,0 +1,28 @@
+<%- include('../partials/header', { title: 'Donate – Ella Rises', currentUser }) %>
+
+<section class="section section-alt">
+  <div class="section-header">
+    <h1 class="section-title">Support Ella Rises</h1>
+    <p class="section-subtitle">
+      Your generosity helps us expand workshops, provide materials, and support long-term mentoring.
+    </p>
+  </div>
+
+  <div class="card card-narrow">
+    <p>
+      This page mirrors the external donation experience for the purposes of this class project.
+      In production, this would connect to Ella Rises' real donation platform.
+    </p>
+
+    <form action="/donations/new" method="GET" class="form">
+      <div class="form-group">
+        <label for="amount">Donation Amount (USD)</label>
+        <input id="amount" name="amount" type="number" min="5" step="5" placeholder="50">
+      </div>
+
+      <button class="btn btn-primary btn-full">Make a Gift</button>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

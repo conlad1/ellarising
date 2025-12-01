@@ -1,0 +1,31 @@
+<%- include('../partials/header', { title: 'Participant Details', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title"><%= participant.first_name %> <%= participant.last_name %></h1>
+      <p class="section-subtitle">Participant profile & milestones.</p>
+    </div>
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/participants/<%= participant.id %>/edit" class="btn btn-outline">Edit</a>
+    <% } %>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2>Profile</h2>
+      <p><strong>School:</strong> <%= participant.school || '-' %></p>
+      <p><strong>Grade:</strong> <%= participant.grade || '-' %></p>
+      <p><strong>City:</strong> <%= participant.city || '-' %></p>
+      <p><strong>Email:</strong> <%= participant.email || '-' %></p>
+      <p><strong>Phone:</strong> <%= participant.phone || '-' %></p>
+    </div>
+
+    <div class="card">
+      <h2>Milestones</h2>
+      <%- include('milestones', { milestones: participant.milestones, participant, currentUser }) %>
+    </div>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>

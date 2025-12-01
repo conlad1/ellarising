@@ -1,0 +1,44 @@
+<%- include('../partials/header', { title: 'Surveys – Post-Event Feedback', currentUser }) %>
+
+<section class="section">
+  <div class="section-header">
+    <h1 class="section-title">Post-Event Surveys</h1>
+    <p class="section-subtitle">Satisfaction, usefulness, and recommendation scores from participants.</p>
+  </div>
+
+  <% if (!surveys || surveys.length === 0) { %>
+    <p>No survey responses yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Event</th>
+          <th>Participant</th>
+          <th>Satisfaction</th>
+          <th>Usefulness</th>
+          <th>Recommend</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% surveys.forEach(s => { %>
+          <tr>
+            <td><%= s.event_name %></td>
+            <td><%= s.participant_name %></td>
+            <td><%= s.satisfaction %></td>
+            <td><%= s.usefulness %></td>
+            <td><%= s.recommendation %></td>
+            <td class="table-actions">
+              <a href="/surveys/<%= s.id %>" class="link-small">View</a>
+              <% if (currentUser && currentUser.role === 'manager') { %>
+                | <a href="/surveys/<%= s.id %>/edit" class="link-small">Edit</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

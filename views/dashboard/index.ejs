@@ -1,0 +1,118 @@
+<%- include('../partials/header', { title: 'Impact Dashboard', currentUser }) %>
+
+<section class="section">
+  <div class="section-header">
+    <h1 class="section-title">Impact Dashboard</h1>
+    <p class="section-subtitle">
+      Filter by event type and participant demographics to see how experiences are leading to long-term success.
+    </p>
+  </div>
+
+  <form class="filters">
+    <div class="form-group">
+      <label for="eventType">Event Type</label>
+      <select id="eventType" name="eventType">
+        <option value="">All</option>
+        <% eventTypes.forEach(t => { %>
+          <option value="<%= t %>" <%= filters.eventType === t ? 'selected' : '' %>><%= t %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label for="grade">Grade</label>
+      <select id="grade" name="grade">
+        <option value="">All</option>
+        <% grades.forEach(g => { %>
+          <option value="<%= g %>" <%= filters.grade === g ? 'selected' : '' %>><%= g %></option>
+        <% }) %>
+      </select>
+    </div>
+
+    <button class="btn btn-outline">Apply Filters</button>
+  </form>
+
+  <div class="impact-highlight">
+    <div class="impact-card">
+      <h3>Participants</h3>
+      <p><strong><%= kpis.participants || 0 %></strong></p>
+    </div>
+    <div class="impact-card">
+      <h3>Avg Satisfaction</h3>
+      <p><strong><%= kpis.avgSatisfaction || '--' %>/5</strong></p>
+    </div>
+    <div class="impact-card">
+      <h3>Avg Usefulness</h3>
+      <p><strong><%= kpis.avgUsefulness || '--' %>/5</strong></p>
+    </div>
+    <div class="impact-card">
+      <h3>Milestones Achieved</h3>
+      <p><strong><%= kpis.milestones || 0 %></strong></p>
+    </div>
+  </div>
+
+  <div class="grid grid-2">
+    <div class="card">
+      <h2>Event Satisfaction Over Time</h2>
+      <canvas id="satisfactionChart"></canvas>
+    </div>
+    <div class="card">
+      <h2>Milestones by Event Type</h2>
+      <canvas id="milestoneChart"></canvas>
+    </div>
+  </div>
+
+  <!-- If you're embedding Tableau later, you can add an iframe here -->
+  <!--
+  <div class="card">
+    <h2>Tableau Dashboard</h2>
+    <iframe src="YOUR_TABLEAU_PUBLIC_URL" width="100%" height="500" frameborder="0"></iframe>
+  </div>
+  -->
+</section>
+
+<script>
+  // Safely embed arrays from server (fallback to empty arrays)
+  const trendLabels = <%- JSON.stringify(trendLabels || []) %>;
+  const trendScores = <%- JSON.stringify(trendScores || []) %>;
+  const milestoneLabels = <%- JSON.stringify(milestoneLabels || []) %>;
+  const milestoneCounts = <%- JSON.stringify(milestoneCounts || []) %>;
+
+  const ctx1 = document.getElementById('satisfactionChart').getContext('2d');
+  new Chart(ctx1, {
+    type: 'line',
+    data: {
+      labels: trendLabels,
+      datasets: [{
+        label: 'Average Satisfaction',
+        data: trendScores
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          suggestedMin: 1,
+          suggestedMax: 5
+        }
+      }
+    }
+  });
+
+  const ctx2 = document.getElementById('milestoneChart').getContext('2d');
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: milestoneLabels,
+      datasets: [{
+        label: 'Milestones Achieved',
+        data: milestoneCounts
+      }]
+    },
+    options: {
+      responsive: true
+    }
+  });
+</script>
+
+<%- include('../partials/footer') %>

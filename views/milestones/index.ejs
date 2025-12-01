@@ -1,0 +1,45 @@
+<%- include('../partials/header', { title: 'Milestones – Setup', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Milestone Definitions</h1>
+      <p class="section-subtitle">
+        These are the key educational milestones that participants can achieve (e.g., applied to college, declared STEAM major).
+      </p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/milestones/new" class="btn btn-primary">Add Milestone</a>
+    <% } %>
+  </div>
+
+  <% if (!milestones || milestones.length === 0) { %>
+    <p>No milestones defined yet.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <% milestones.forEach(m => { %>
+          <tr>
+            <td><%= m.title %></td>
+            <td><%= m.description || '-' %></td>
+            <td class="table-actions">
+              <% if (currentUser && currentUser.role === 'manager') { %>
+                <a href="/milestones/<%= m.id %>/edit" class="link-small">Edit</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>

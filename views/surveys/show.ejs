@@ -1,0 +1,18 @@
+<%- include('../partials/header', { title: 'Survey Response', currentUser }) %>
+
+<section class="section">
+  <div class="section-header">
+    <h1 class="section-title">Survey for <%= survey.event_name %></h1>
+    <p class="section-subtitle">Submitted by <%= survey.participant_name %></p>
+  </div>
+
+  <div class="card">
+    <p><strong>Satisfaction:</strong> <%= survey.satisfaction %>/5</p>
+    <p><strong>Usefulness:</strong> <%= survey.usefulness %>/5</p>
+    <p><strong>Recommendation:</strong> <%= survey.recommendation %>/10</p>
+    <p><strong>Comments:</strong></p>
+    <p><%= survey.comments || 'No comments provided.' %></p>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
