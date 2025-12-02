@@ -14,11 +14,23 @@
       In production, this would connect to Ella Rises' real donation platform.
     </p>
 
-    <form action="/donations/new" method="GET" class="form">
+    <form action="/donations/public" method="POST" class="form">
+      <div class="form-group">
+        <label for="donor_name">Name</label>
+        <input id="donor_name" name="donor_name" type="text" placeholder="Your name">
+      </div>
+
+      <div class="form-group">
+        <label for="donor_email">Email</label>
+        <input id="donor_email" name="donor_email" type="email" placeholder="you@example.com">
+      </div>
+
       <div class="form-group">
         <label for="amount">Donation Amount (USD)</label>
-        <input id="amount" name="amount" type="number" min="5" step="5" placeholder="50">
+        <input id="amount" name="amount" type="number" min="5" step="5" placeholder="50" required>
       </div>
+
+      <input type="hidden" name="source" value="Website form">
 
       <button class="btn btn-primary btn-full">Make a Gift</button>
     </form>

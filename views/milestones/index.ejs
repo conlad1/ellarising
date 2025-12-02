@@ -1,18 +1,26 @@
-<%- include('../partials/header', { title: 'Milestones – Setup', currentUser }) %>
+<%- include('../partials/header', { title: 'Milestones – Admin', currentUser }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
     <div>
-      <h1 class="section-title">Milestone Definitions</h1>
+      <h1 class="section-title">Milestones</h1>
       <p class="section-subtitle">
-        These are the key educational milestones that participants can achieve (e.g., applied to college, declared STEAM major).
+        Key steps that show long-term success for participants.
       </p>
     </div>
 
     <% if (currentUser && currentUser.role === 'manager') { %>
-      <a href="/milestones/new" class="btn btn-primary">Add Milestone</a>
+      <a href="/milestones/new" class="btn btn-primary">Create Milestone</a>
     <% } %>
   </div>
+
+  <form method="GET" class="filters filters-inline">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by title or description">
+    </div>
+    <button class="btn btn-outline">Filter</button>
+  </form>
 
   <% if (!milestones || milestones.length === 0) { %>
     <p>No milestones defined yet.</p>
@@ -22,7 +30,7 @@
         <tr>
           <th>Title</th>
           <th>Description</th>
-          <th></th>
+          <th class="table-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
@@ -33,6 +41,10 @@
             <td class="table-actions">
               <% if (currentUser && currentUser.role === 'manager') { %>
                 <a href="/milestones/<%= m.id %>/edit" class="link-small">Edit</a>
+                |
+                <form action="/milestones/<%= m.id %>/delete" method="POST" class="inline-form">
+                  <button class="link-small link-danger" onclick="return confirm('Delete this milestone?');">Delete</button>
+                </form>
               <% } %>
             </td>
           </tr>
