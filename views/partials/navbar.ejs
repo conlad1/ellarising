@@ -1,7 +1,6 @@
 <nav class="navbar">
   <div class="navbar-left">
     <a href="/" class="navbar-logo">
-      <!-- You can replace with actual logo image -->
       <span class="logo-mark">ER</span>
       <span class="logo-text">Ella Rises</span>
     </a>
@@ -15,12 +14,16 @@
     <a href="/impact" class="nav-link">Impact</a>
 
     <% if (currentUser) { %>
+      <span class="nav-separator"></span>
       <a href="/dashboard" class="nav-link">Dashboard</a>
       <a href="/participants" class="nav-link">Participants</a>
-      <a href="/events/admin" class="nav-link">Admin Events</a>
+      <a href="/events/admin" class="nav-link">Events Admin</a>
       <a href="/surveys" class="nav-link">Surveys</a>
       <a href="/milestones" class="nav-link">Milestones</a>
       <a href="/donations" class="nav-link">Donations</a>
+      <% if (currentUser.role === 'manager') { %>
+        <a href="/users" class="nav-link">Users</a>
+      <% } %>
     <% } %>
   </div>
 
@@ -28,7 +31,10 @@
     <% if (!currentUser) { %>
       <a href="/login" class="btn btn-outline">Login</a>
     <% } else { %>
-      <span class="nav-user">Hi, <strong><%= currentUser.username %></strong> (<%= currentUser.role %>)</span>
+      <span class="nav-user">
+        Hi, <strong><%= currentUser.username %></strong>
+        <span class="tag tag-small"><%= currentUser.role %></span>
+      </span>
       <form action="/logout" method="POST" class="inline-form">
         <button class="btn btn-accent">Logout</button>
       </form>

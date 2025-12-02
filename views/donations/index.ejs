@@ -14,16 +14,13 @@
     <% } %>
   </div>
 
-  <div class="impact-highlight">
-    <div class="impact-card">
-      <h3>Total Donations</h3>
-      <p><strong>$<%= totals?.totalAmount || 0 %></strong></p>
+  <form method="GET" class="filters filters-inline">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by donor or email">
     </div>
-    <div class="impact-card">
-      <h3>Number of Gifts</h3>
-      <p><strong><%= totals?.count || 0 %></strong></p>
-    </div>
-  </div>
+    <button class="btn btn-outline">Filter</button>
+  </form>
 
   <% if (!donations || donations.length === 0) { %>
     <p>No donations recorded yet.</p>
@@ -31,23 +28,29 @@
     <table class="table">
       <thead>
         <tr>
-          <th>Date</th>
-          <th>Donor Name</th>
+          <th>Donor</th>
+          <th>Email</th>
           <th>Amount</th>
+          <th>Date</th>
           <th>Source</th>
-          <th></th>
+          <th class="table-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
         <% donations.forEach(d => { %>
           <tr>
-            <td><%= d.dateFormatted %></td>
-            <td><%= d.donor_name || 'Anonymous' %></td>
-            <td>$<%= d.amount %></td>
+            <td><%= d.donor %></td>
+            <td><%= d.email || '-' %></td>
+            <td>$<%= d.amount.toFixed ? d.amount.toFixed(2) : d.amount %></td>
+            <td><%= d.date %></td>
             <td><%= d.source || '-' %></td>
             <td class="table-actions">
               <% if (currentUser && currentUser.role === 'manager') { %>
                 <a href="/donations/<%= d.id %>/edit" class="link-small">Edit</a>
+                |
+                <form action="/donations/<%= d.id %>/delete" method="POST" class="inline-form">
+                  <button class="link-small link-danger" onclick="return confirm('Delete this donation?');">Delete</button>
+                </form>
               <% } %>
             </td>
           </tr>

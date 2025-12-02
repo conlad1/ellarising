@@ -1,37 +1,59 @@
-<%- include('../partials/header', { title: 'Surveys – Post-Event Feedback', currentUser }) %>
+<%- include('../partials/header', { title: 'Surveys – Admin', currentUser }) %>
 
 <section class="section">
-  <div class="section-header">
-    <h1 class="section-title">Post-Event Surveys</h1>
-    <p class="section-subtitle">Satisfaction, usefulness, and recommendation scores from participants.</p>
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Surveys</h1>
+      <p class="section-subtitle">
+        Feedback from participants about Ella Rises events.
+      </p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/surveys/new" class="btn btn-primary">Record Survey</a>
+    <% } %>
   </div>
 
+  <form method="GET" class="filters filters-inline">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by participant or event">
+    </div>
+    <button class="btn btn-outline">Filter</button>
+  </form>
+
   <% if (!surveys || surveys.length === 0) { %>
-    <p>No survey responses yet.</p>
+    <p>No surveys recorded yet.</p>
   <% } else { %>
     <table class="table">
       <thead>
         <tr>
-          <th>Event</th>
           <th>Participant</th>
+          <th>Event</th>
+          <th>Submitted</th>
           <th>Satisfaction</th>
           <th>Usefulness</th>
           <th>Recommend</th>
-          <th></th>
+          <th class="table-actions">Actions</th>
         </tr>
       </thead>
       <tbody>
         <% surveys.forEach(s => { %>
           <tr>
-            <td><%= s.event_name %></td>
-            <td><%= s.participant_name %></td>
-            <td><%= s.satisfaction %></td>
-            <td><%= s.usefulness %></td>
-            <td><%= s.recommendation %></td>
+            <td><%= s.participantName %></td>
+            <td><%= s.eventName %></td>
+            <td><%= s.submitted_at %></td>
+            <td><%= s.satisfaction || '-' %></td>
+            <td><%= s.usefulness || '-' %></td>
+            <td><%= s.recommend || '-' %></td>
             <td class="table-actions">
               <a href="/surveys/<%= s.id %>" class="link-small">View</a>
               <% if (currentUser && currentUser.role === 'manager') { %>
                 | <a href="/surveys/<%= s.id %>/edit" class="link-small">Edit</a>
+                |
+                <form action="/surveys/<%= s.id %>/delete" method="POST" class="inline-form">
+                  <button class="link-small link-danger" onclick="return confirm('Delete this survey?');">Delete</button>
+                </form>
               <% } %>
             </td>
           </tr>

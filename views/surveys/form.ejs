@@ -14,8 +14,8 @@
         <select id="event_id" name="event_id" required>
           <option value="">Select an event</option>
           <% events.forEach(ev => { %>
-            <option value="<%= ev.id %>" <%= survey?.event_id === ev.id ? 'selected' : '' %>>
-              <%= ev.name %> – <%= ev.dateFormatted %>
+            <option value="<%= ev.id %>" <%= survey && survey.event_id === ev.id ? 'selected' : '' %>>
+              <%= ev.name %>
             </option>
           <% }) %>
         </select>
@@ -26,7 +26,7 @@
         <select id="participant_id" name="participant_id" required>
           <option value="">Select a participant</option>
           <% participants.forEach(p => { %>
-            <option value="<%= p.id %>" <%= survey?.participant_id === p.id ? 'selected' : '' %>>
+            <option value="<%= p.id %>" <%= survey && survey.participant_id === p.id ? 'selected' : '' %>>
               <%= p.first_name %> <%= p.last_name %>
             </option>
           <% }) %>
@@ -43,14 +43,14 @@
           <input id="usefulness" name="usefulness" type="number" min="1" max="5" value="<%= survey?.usefulness || '' %>" required>
         </div>
         <div class="form-group">
-          <label for="recommendation">Recommend (1–10)</label>
-          <input id="recommendation" name="recommendation" type="number" min="1" max="10" value="<%= survey?.recommendation || '' %>" required>
+          <label for="recommend">Recommend (1–5)</label>
+          <input id="recommend" name="recommend" type="number" min="1" max="5" value="<%= survey?.recommend || '' %>" required>
         </div>
       </div>
 
       <div class="form-group">
-        <label for="comments">Comments</label>
-        <textarea id="comments" name="comments" rows="4"><%= survey?.comments || '' %></textarea>
+        <label for="comment">Comments</label>
+        <textarea id="comment" name="comment" rows="4"><%= survey?.comment || '' %></textarea>
       </div>
 
       <div class="form-actions">

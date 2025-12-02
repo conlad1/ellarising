@@ -8,99 +8,88 @@
     </p>
   </div>
 
-  <form class="filters">
+  <form class="filters filters-grid" method="GET">
     <div class="form-group">
       <label for="eventType">Event Type</label>
       <select id="eventType" name="eventType">
         <option value="">All</option>
         <% eventTypes.forEach(t => { %>
-          <option value="<%= t %>" <%= filters.eventType === t ? 'selected' : '' %>><%= t %></option>
+          <option value="<%= t %>"><%= t %></option>
         <% }) %>
       </select>
     </div>
-
+    <div class="form-group">
+      <label for="city">City</label>
+      <select id="city" name="city">
+        <option value="">All</option>
+        <% cities.forEach(c => { %>
+          <option value="<%= c %>"><%= c %></option>
+        <% }) %>
+      </select>
+    </div>
     <div class="form-group">
       <label for="grade">Grade</label>
       <select id="grade" name="grade">
         <option value="">All</option>
         <% grades.forEach(g => { %>
-          <option value="<%= g %>" <%= filters.grade === g ? 'selected' : '' %>><%= g %></option>
+          <option value="<%= g %>"><%= g %></option>
         <% }) %>
       </select>
     </div>
-
-    <button class="btn btn-outline">Apply Filters</button>
+    <div class="form-group form-group-submit">
+      <button class="btn btn-outline">Apply Filters (Preview only)</button>
+    </div>
   </form>
 
-  <div class="impact-highlight">
-    <div class="impact-card">
-      <h3>Participants</h3>
-      <p><strong><%= kpis.participants || 0 %></strong></p>
-    </div>
-    <div class="impact-card">
-      <h3>Avg Satisfaction</h3>
-      <p><strong><%= kpis.avgSatisfaction || '--' %>/5</strong></p>
-    </div>
-    <div class="impact-card">
-      <h3>Avg Usefulness</h3>
-      <p><strong><%= kpis.avgUsefulness || '--' %>/5</strong></p>
-    </div>
-    <div class="impact-card">
-      <h3>Milestones Achieved</h3>
-      <p><strong><%= kpis.milestones || 0 %></strong></p>
-    </div>
+  <div class="grid grid-4 kpi-grid">
+    <% kpis.forEach(kpi => { %>
+      <div class="card kpi-card">
+        <div class="kpi-label"><%= kpi.label %></div>
+        <div class="kpi-value"><%= kpi.value %></div>
+      </div>
+    <% }) %>
   </div>
 
   <div class="grid grid-2">
     <div class="card">
-      <h2>Event Satisfaction Over Time</h2>
-      <canvas id="satisfactionChart"></canvas>
+      <h2>Participants Reached Over Time</h2>
+      <canvas id="trendChart"></canvas>
     </div>
     <div class="card">
-      <h2>Milestones by Event Type</h2>
+      <h2>Milestones Achieved</h2>
       <canvas id="milestoneChart"></canvas>
     </div>
   </div>
-
-  <!-- If you're embedding Tableau later, you can add an iframe here -->
-  <!--
-  <div class="card">
-    <h2>Tableau Dashboard</h2>
-    <iframe src="YOUR_TABLEAU_PUBLIC_URL" width="100%" height="500" frameborder="0"></iframe>
-  </div>
-  -->
 </section>
 
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-  // Safely embed arrays from server (fallback to empty arrays)
   const trendLabels = <%- JSON.stringify(trendLabels || []) %>;
   const trendScores = <%- JSON.stringify(trendScores || []) %>;
   const milestoneLabels = <%- JSON.stringify(milestoneLabels || []) %>;
   const milestoneCounts = <%- JSON.stringify(milestoneCounts || []) %>;
 
-  const ctx1 = document.getElementById('satisfactionChart').getContext('2d');
-  new Chart(ctx1, {
+  const trendCtx = document.getElementById('trendChart').getContext('2d');
+  const milestoneCtx = document.getElementById('milestoneChart').getContext('2d');
+
+  new Chart(trendCtx, {
     type: 'line',
     data: {
       labels: trendLabels,
       datasets: [{
-        label: 'Average Satisfaction',
-        data: trendScores
+        label: 'Participants Reached',
+        data: trendScores,
+        fill: false,
+        tension: 0.2
       }]
     },
     options: {
       responsive: true,
-      scales: {
-        y: {
-          suggestedMin: 1,
-          suggestedMax: 5
-        }
-      }
+      plugins: { legend: { display: true } }
     }
   });
 
-  const ctx2 = document.getElementById('milestoneChart').getContext('2d');
-  new Chart(ctx2, {
+  new Chart(milestoneCtx, {
     type: 'bar',
     data: {
       labels: milestoneLabels,
@@ -110,7 +99,9 @@
       }]
     },
     options: {
-      responsive: true
+      indexAxis: 'y',
+      responsive: true,
+      plugins: { legend: { display: true } }
     }
   });
 </script>

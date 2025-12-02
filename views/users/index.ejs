@@ -1,0 +1,57 @@
+<%- include('../partials/header', { title: 'User Maintenance – Ella Rises Admin', currentUser }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Users</h1>
+      <p class="section-subtitle">
+        Manage login accounts for managers and common users.
+      </p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'manager') { %>
+      <a href="/users/new" class="btn btn-primary">Add User</a>
+    <% } %>
+  </div>
+
+  <form method="GET" class="filters filters-inline">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by username or role">
+    </div>
+    <button class="btn btn-outline">Filter</button>
+  </form>
+
+  <% if (!users || users.length === 0) { %>
+    <p>No users found.</p>
+  <% } else { %>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Role</th>
+          <th class="table-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(u => { %>
+          <tr>
+            <td><%= u.username %></td>
+            <td class="tag"><%= u.role %></td>
+            <td class="table-actions">
+              <a href="/users/<%= u.id %>/edit" class="link-small">Edit</a>
+              <% if (u.id !== currentUser.id) { %>
+                |
+                <form action="/users/<%= u.id %>/delete" method="POST" class="inline-form">
+                  <button class="link-small link-danger" onclick="return confirm('Delete this user?');">Delete</button>
+                </form>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
+</section>
+
+<%- include('../partials/footer') %>
