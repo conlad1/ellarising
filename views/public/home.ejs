@@ -45,32 +45,4 @@
   </div>
 </section>
 
-<section class="section">
-  <div class="section-header">
-    <h2 class="section-title">Our Impact</h2>
-    <p class="section-subtitle">
-      This internal portal helps us track satisfaction, usefulness, and long-term successes like STEAM majors and careers.
-    </p>
-  </div>
-
-  <div class="impact-highlight">
-    <div class="impact-card">
-      <h3>Participants</h3>
-      <p><strong><%= impactStats?.participantsCount || '---' %></strong> girls engaged in our programs.</p>
-    </div>
-    <div class="impact-card">
-      <h3>Average Event Satisfaction</h3>
-      <p><strong><%= impactStats?.avgSatisfaction || '--' %>/5</strong> based on post-event surveys.</p>
-    </div>
-    <div class="impact-card">
-      <h3>Milestones Achieved</h3>
-      <p><strong><%= impactStats?.milestonesAchieved || '---' %></strong> tracked milestones toward education goals.</p>
-    </div>
-  </div>
-
-  <div class="center">
-    <a href="/impact" class="btn btn-primary">See more impact</a>
-  </div>
-</section>
-
 <%- include('../partials/footer') %>
