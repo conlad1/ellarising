@@ -372,6 +372,16 @@ app.get('/donate', (req, res) => {
 });
 
 /**
+ * Tea Route - Returns HTTP 418 I'm a Teapot status code
+ * 
+ * A playful Easter egg route that returns the HTTP 418 status code,
+ * which is a reference to the Hyper Text Coffee Pot Control Protocol (HTCPCP/1.0).
+ */
+app.get('/tea', (req, res) => {
+  res.sendStatus(418);
+});
+
+/**
  * Impact Page - Shows organization's impact metrics
  * 
  * Displays aggregated statistics:
