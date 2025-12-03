@@ -4,97 +4,67 @@
   <div class="section-header">
     <h1 class="section-title">Impact Dashboard</h1>
     <p class="section-subtitle">
-      Filter by event type and participant demographics to see how experiences are leading to long-term success.
+      Embedded Tableau dashboard showing satisfaction, STEAM graduation, and STEAM job rates by event type.
     </p>
   </div>
 
-  <form class="filters filters-grid" method="GET">
-    <div class="form-group">
-      <label for="eventType">Event Type</label>
-      <select id="eventType" name="eventType">
-        <option value="">All</option>
-        <% eventTypes.forEach(t => { %>
-          <option value="<%= t %>"><%= t %></option>
-        <% }) %>
-      </select>
-    </div>
-    <div class="form-group">
-      <label for="city">City</label>
-      <select id="city" name="city">
-        <option value="">All</option>
-        <% cities.forEach(c => { %>
-          <option value="<%= c %>"><%= c %></option>
-        <% }) %>
-      </select>
-    </div>
-    <div class="form-group form-group-submit">
-      <button class="btn btn-outline">Apply Filters (Preview only)</button>
-    </div>
-  </form>
+  <div class="card">
+    <!-- Tableau Public Embed -->
+    <div class="tableauPlaceholder" id="ellaRisesTableauDashboard" style="position: relative; width:100%;">
+      <noscript>
+        <a href="#">
+          <img alt="Ella Rises Impact Dashboard"
+               src="https://public.tableau.com/static/images/In/Intex_tableau_Sheet_1/Dashboard2/1_rss.png"
+               style="border:none;" />
+        </a>
+      </noscript>
 
-  <div class="grid grid-4 kpi-grid">
-    <% kpis.forEach(kpi => { %>
-      <div class="card kpi-card">
-        <div class="kpi-label"><%= kpi.label %></div>
-        <div class="kpi-value"><%= kpi.value %></div>
-      </div>
-    <% }) %>
-  </div>
-
-  <div class="grid grid-2">
-    <div class="card">
-      <h2>Participants Reached Over Time</h2>
-      <canvas id="trendChart"></canvas>
-    </div>
-    <div class="card">
-      <h2>Milestones Achieved</h2>
-      <canvas id="milestoneChart"></canvas>
+      <object class="tableauViz" style="display:none;">
+        <param name="host_url" value="https%3A%2F%2Fpublic.tableau.com%2F" />
+        <param name="embed_code_version" value="3" />
+        <param name="site_root" value="" />
+        <param name="name" value="Intex_tableau_Sheet_1/Dashboard2" />
+        <param name="tabs" value="no" />
+        <param name="toolbar" value="yes" />
+        <param name="static_image"
+               value="https://public.tableau.com/static/images/In/Intex_tableau_Sheet_1/Dashboard2/1.png" />
+        <param name="animate_transition" value="yes" />
+        <param name="display_static_image" value="yes" />
+        <param name="display_spinner" value="yes" />
+        <param name="display_overlay" value="yes" />
+        <param name="display_count" value="yes" />
+        <param name="language" value="en-US" />
+        <param name="filter" value="publish=yes" />
+      </object>
     </div>
   </div>
 </section>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-  const trendLabels = <%- JSON.stringify(trendLabels || []) %>;
-  const trendScores = <%- JSON.stringify(trendScores || []) %>;
-  const milestoneLabels = <%- JSON.stringify(milestoneLabels || []) %>;
-  const milestoneCounts = <%- JSON.stringify(milestoneCounts || []) %>;
+<script type="text/javascript">
+  // Auto-resize the Tableau viz responsively
+  const divElement = document.getElementById('ellaRisesTableauDashboard');
+  const vizElement = divElement.getElementsByTagName('object')[0];
 
-  const trendCtx = document.getElementById('trendChart').getContext('2d');
-  const milestoneCtx = document.getElementById('milestoneChart').getContext('2d');
-
-  new Chart(trendCtx, {
-    type: 'line',
-    data: {
-      labels: trendLabels,
-      datasets: [{
-        label: 'Participants Reached',
-        data: trendScores,
-        fill: false,
-        tension: 0.2
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: { legend: { display: true } }
+  function sizeTableauViz() {
+    const width = divElement.offsetWidth;
+    if (width > 800) {
+      vizElement.style.width = '100%';
+      vizElement.style.height = (width * 0.75) + 'px';
+    } else if (width > 500) {
+      vizElement.style.width = '100%';
+      vizElement.style.height = (width * 0.75) + 'px';
+    } else {
+      vizElement.style.width = '100%';
+      vizElement.style.height = '977px';
     }
-  });
+  }
 
-  new Chart(milestoneCtx, {
-    type: 'bar',
-    data: {
-      labels: milestoneLabels,
-      datasets: [{
-        label: 'Milestones Achieved',
-        data: milestoneCounts
-      }]
-    },
-    options: {
-      indexAxis: 'y',
-      responsive: true,
-      plugins: { legend: { display: true } }
-    }
-  });
+  sizeTableauViz();
+  window.addEventListener('resize', sizeTableauViz);
+
+  const scriptElement = document.createElement('script');
+  scriptElement.src = 'https://public.tableau.com/javascripts/api/viz_v1.js';
+  vizElement.parentNode.insertBefore(scriptElement, vizElement);
 </script>
 
 <%- include('../partials/footer') %>

@@ -2,37 +2,37 @@
 
 <section class="section">
   <div class="section-header">
-    <h1 class="section-title">Impact & Outcomes</h1>
+    <h2 class="section-title">Our Impact</h2>
     <p class="section-subtitle">
-      These summary metrics are powered by the data you manage in the admin portal.
+      This internal portal helps us track satisfaction, usefulness, and long-term successes
+      like STEAM majors and careers.
     </p>
   </div>
 
   <div class="impact-highlight">
     <div class="impact-card">
-      <h3>Participants Reached</h3>
-      <p><strong><%= impactStats?.participantsCount || '---' %></strong></p>
+      <h3>Participants</h3>
+      <p>
+        <strong><%= impactStats?.participantsCount || '---' %></strong>
+        girls engaged in our programs.
+      </p>
     </div>
-    <div class="impact-card">
-      <h3>Average Recommendation Score</h3>
-      <p><strong><%= impactStats?.avgRecommend || '--' %>/10</strong></p>
-    </div>
-    <div class="impact-card">
-      <h3>STEAM Major Rate</h3>
-      <p><strong><%= impactStats?.steamMajorRate || '--' %>%</strong></p>
-    </div>
-    <div class="impact-card">
-      <h3>STEAM Job Rate</h3>
-      <p><strong><%= impactStats?.steamJobRate || '--' %>%</strong></p>
-    </div>
-  </div>
 
-  <div class="card">
-    <h2>Milestones Over Time</h2>
-    <!-- You can embed a Tableau dashboard or Chart.js here later -->
-    <p class="muted">
-      In the final version, this section will display our Tableau dashboard embedded into the website.
-    </p>
+    <div class="impact-card">
+      <h3>Average Event Satisfaction</h3>
+      <p>
+        <strong><%= impactStats?.avgSatisfaction || '--' %>/5</strong>
+        based on post-event surveys.
+      </p>
+    </div>
+
+    <div class="impact-card">
+      <h3>Milestones Achieved</h3>
+      <p>
+        <strong><%= impactStats?.milestonesAchieved || '---' %></strong>
+        tracked milestones toward education goals.
+      </p>
+    </div>
   </div>
 </section>
 
