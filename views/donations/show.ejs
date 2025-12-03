@@ -1,0 +1,32 @@
+<%- include('../partials/header', { title: 'Donation Details', currentUser, currentPath: '/donations' }) %>
+
+<section class="section">
+  <a href="/donations" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Donations</a>
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Donation #<%= donation.donation_number %></h1>
+      <p class="section-subtitle">
+        <%= donation.donor || 'Anonymous' %> • <%= donation.date %>
+      </p>
+    </div>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/donations/<%= donation.participant_id || 'null' %>/<%= donation.donation_number %>/edit" class="btn btn-outline">Edit</a>
+        <form action="/donations/<%= donation.participant_id || 'null' %>/<%= donation.donation_number %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+          <button class="btn btn-outline link-danger" onclick="return confirm('Delete this donation?');">Delete</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Donation Information</h2>
+    <p><strong>Donor:</strong> <%= donation.donor || 'Anonymous' %></p>
+    <p><strong>Email:</strong> <%= donation.email || '-' %></p>
+    <p><strong>Amount:</strong> $<%= donation.amount.toFixed ? donation.amount.toFixed(2) : donation.amount %></p>
+    <p><strong>Date:</strong> <%= donation.date %></p>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+

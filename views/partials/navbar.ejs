@@ -1,4 +1,41 @@
-<nav class="navbar">
+<%
+  // Helper function to check if a path should be active
+  function isActiveLink(linkPath, currentPath) {
+    if (!currentPath) return false;
+    
+    // Special case for home page - only active if exactly "/"
+    if (linkPath === '/') {
+      return currentPath === '/';
+    }
+    
+    // Special case for /events - should not match /events/admin
+    if (linkPath === '/events') {
+      return currentPath === '/events';
+    }
+    
+    // For all other paths, check if currentPath starts with linkPath
+    return currentPath.startsWith(linkPath);
+  }
+  
+  const current = typeof currentPath !== 'undefined' ? currentPath : '';
+  
+  // Check if we're on an admin page
+  const isAdminPage = current && (
+    current.startsWith('/dashboard') ||
+    current.startsWith('/participants') ||
+    current.startsWith('/events/admin') ||
+    current.startsWith('/events/templates') ||
+    (current.startsWith('/events/') && current !== '/events') || // Event instance routes (e.g., /events/:id, /events/new)
+    current.startsWith('/surveys') ||
+    current.startsWith('/milestones') ||
+    current.startsWith('/donations') ||
+    current.startsWith('/users') ||
+    current.startsWith('/login')
+  );
+  
+  const navbarClass = isAdminPage ? 'navbar navbar-admin' : 'navbar';
+%>
+<nav class="<%= navbarClass %>">
   <div class="navbar-left">
     <a href="/" class="navbar-logo">
       <span class="logo-mark">ER</span>
@@ -7,23 +44,21 @@
   </div>
 
   <div class="navbar-center">
-    <a href="/" class="nav-link">Home</a>
-    <a href="/programs" class="nav-link">Programs</a>
-    <a href="/events" class="nav-link">Events</a>
-    <a href="/donate" class="nav-link">Donate</a>
-    <a href="/impact" class="nav-link">Impact</a>
+    <a href="/" class="nav-link <%= isActiveLink('/', current) ? 'active' : '' %>">Home</a>
+    <a href="/programs" class="nav-link <%= isActiveLink('/programs', current) ? 'active' : '' %>">Programs</a>
+    <a href="/events" class="nav-link <%= isActiveLink('/events', current) ? 'active' : '' %>">Events</a>
+    <a href="/donate" class="nav-link <%= isActiveLink('/donate', current) ? 'active' : '' %>">Donate</a>
+    <a href="/impact" class="nav-link <%= isActiveLink('/impact', current) ? 'active' : '' %>">Impact</a>
 
-    <% if (currentUser) { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <span class="nav-separator"></span>
-      <a href="/dashboard" class="nav-link">Dashboard</a>
-      <a href="/participants" class="nav-link">Participants</a>
-      <a href="/events/admin" class="nav-link">Events Admin</a>
-      <a href="/surveys" class="nav-link">Surveys</a>
-      <a href="/milestones" class="nav-link">Milestones</a>
-      <a href="/donations" class="nav-link">Donations</a>
-      <% if (currentUser.role === 'manager') { %>
-        <a href="/users" class="nav-link">Users</a>
-      <% } %>
+      <a href="/dashboard" class="nav-link <%= isActiveLink('/dashboard', current) ? 'active' : '' %>">Dashboard</a>
+      <a href="/participants" class="nav-link <%= isActiveLink('/participants', current) ? 'active' : '' %>">Participants</a>
+      <a href="/events/admin" class="nav-link <%= isActiveLink('/events/admin', current) ? 'active' : '' %>">Events Admin</a>
+      <a href="/surveys" class="nav-link <%= isActiveLink('/surveys', current) ? 'active' : '' %>">Surveys</a>
+      <a href="/milestones" class="nav-link <%= isActiveLink('/milestones', current) ? 'active' : '' %>">Milestones</a>
+      <a href="/donations" class="nav-link <%= isActiveLink('/donations', current) ? 'active' : '' %>">Donations</a>
+      <a href="/users" class="nav-link <%= isActiveLink('/users', current) ? 'active' : '' %>">Users</a>
     <% } %>
   </div>
 

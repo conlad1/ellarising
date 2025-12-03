@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Milestones – Admin', currentUser }) %>
+<%- include('../partials/header', { title: 'Milestones – Admin', currentUser, currentPath: '/milestones' }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <% if (currentUser && currentUser.role === 'manager') { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <a href="/milestones/new" class="btn btn-primary">Create Milestone</a>
     <% } %>
   </div>
@@ -25,7 +25,8 @@
   <% if (!milestones || milestones.length === 0) { %>
     <p>No milestones defined yet.</p>
   <% } else { %>
-    <table class="table">
+    <div class="table-container">
+      <table class="table">
       <thead>
         <tr>
           <th>Title</th>
@@ -39,18 +40,13 @@
             <td><%= m.title %></td>
             <td><%= m.description || '-' %></td>
             <td class="table-actions">
-              <% if (currentUser && currentUser.role === 'manager') { %>
-                <a href="/milestones/<%= m.id %>/edit" class="link-small">Edit</a>
-                |
-                <form action="/milestones/<%= m.id %>/delete" method="POST" class="inline-form">
-                  <button class="link-small link-danger" onclick="return confirm('Delete this milestone?');">Delete</button>
-                </form>
-              <% } %>
+              <a href="/milestones/<%= m.id %>" class="link-small">View/edit record details</a>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+    </div>
   <% } %>
 </section>
 

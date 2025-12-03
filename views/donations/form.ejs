@@ -1,33 +1,41 @@
-<%- include('../partials/header', { title: formTitle || 'Donation', currentUser }) %>
+<%- include('../partials/header', { title: formTitle || 'Donation', currentUser, currentPath: '/donations' }) %>
 
 <section class="section">
-  <div class="card card-narrow">
+  <a href="/donations" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Donations</a>
+  <div class="section-header">
     <h1 class="section-title"><%= formTitle || 'Record Donation' %></h1>
+    <p class="section-subtitle">Enter donation information below.</p>
+  </div>
 
+  <div class="card card-narrow">
     <form action="<%= formAction %>" method="POST" class="form">
       <% if (typeof csrfToken !== 'undefined') { %>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
       <% } %>
 
       <div class="form-group">
-        <label for="donor_name">Donor Name</label>
-        <input id="donor_name" name="donor_name" type="text" value="<%= donation?.donor_name || '' %>">
+        <label for="participant_id">Participant (Optional - leave empty for anonymous)</label>
+        <select id="participant_id" name="participant_id">
+          <option value="">Anonymous Donation</option>
+          <% if (typeof participants !== 'undefined' && participants) { %>
+            <% participants.forEach(p => { %>
+              <option value="<%= p.id %>" <%= donation && donation.participant_id === p.id ? 'selected' : '' %>>
+                <%= p.participant_first_name %> <%= p.participant_last_name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
       </div>
 
       <div class="form-group-inline">
         <div class="form-group">
           <label for="amount">Amount (USD)</label>
-          <input id="amount" name="amount" type="number" min="1" step="1" value="<%= donation?.amount || '' %>" required>
+          <input id="amount" name="amount" type="number" min="0.01" step="0.01" value="<%= donation?.amount || '' %>" required>
         </div>
         <div class="form-group">
           <label for="date">Date</label>
-          <input id="date" name="date" type="date" value="<%= donation?.dateISO || '' %>">
+          <input id="date" name="date" type="date" value="<%= donation?.dateISO || donation?.date || '' %>">
         </div>
-      </div>
-
-      <div class="form-group">
-        <label for="source">Source / Campaign</label>
-        <input id="source" name="source" type="text" value="<%= donation?.source || '' %>">
       </div>
 
       <div class="form-actions">

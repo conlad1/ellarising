@@ -1,0 +1,41 @@
+<%- include('../../partials/header', { title: 'Event Template Details', currentUser, currentPath: '/events/templates' }) %>
+
+<section class="section">
+  <a href="/events/templates" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Event Templates</a>
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title"><%= template.name %></h1>
+      <p class="section-subtitle"><%= template.type %></p>
+    </div>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/events/templates/<%= template.id %>/edit" class="btn btn-outline">Edit</a>
+        <% if (template.instances_count > 0) { %>
+          <span class="btn btn-outline muted" style="cursor: not-allowed; opacity: 0.6; margin-left: 0.5rem;" title="Cannot delete event template with instances (has <%= template.instances_count %> instance<%= template.instances_count > 1 ? 's' : '' %>)">Delete</span>
+        <% } else { %>
+          <form action="/events/templates/<%= template.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+            <button class="btn btn-outline link-danger" onclick="return confirm('Delete this event template?');">Delete</button>
+          </form>
+        <% } %>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Template Information</h2>
+    <p><strong>Event Name:</strong> <%= template.name %></p>
+    <p><strong>Event Type:</strong> <%= template.type %></p>
+    <% if (template.default_capacity && template.default_capacity !== '-') { %>
+      <p><strong>Default Capacity:</strong> <%= template.default_capacity %></p>
+    <% } %>
+    <% if (template.description) { %>
+      <p><strong>Description:</strong></p>
+      <p><%= template.description %></p>
+    <% } else { %>
+      <p><strong>Description:</strong> No description provided.</p>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>
+

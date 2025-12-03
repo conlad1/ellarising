@@ -1,0 +1,43 @@
+<%- include('../../partials/header', { title: 'Event Instance Details', currentUser, currentPath: '/events/admin' }) %>
+
+<section class="section">
+  <a href="/events/admin" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Event Instances</a>
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title"><%= event.event_name %></h1>
+      <p class="section-subtitle"><%= event.event_type %> • <%= event.start_time_formatted %> • <%= event.location || 'TBD' %></p>
+    </div>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/events/<%= event.id %>/edit" class="btn btn-outline">Edit</a>
+        <form action="/events/<%= event.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+          <button class="btn btn-outline link-danger" onclick="return confirm('Delete this event instance?');">Delete</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Event Information</h2>
+    <p><strong>Event Name:</strong> <%= event.event_name %></p>
+    <p><strong>Event Type:</strong> <%= event.event_type %></p>
+    <% if (event.event_description) { %>
+      <p><strong>Description:</strong></p>
+      <p><%= event.event_description %></p>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Instance Details</h2>
+    <p><strong>Start Date & Time:</strong> <%= event.start_time_formatted %></p>
+    <% if (event.end_time_formatted) { %>
+      <p><strong>End Date & Time:</strong> <%= event.end_time_formatted %></p>
+    <% } %>
+    <p><strong>Location:</strong> <%= event.location || 'Not specified' %></p>
+    <% if (event.capacity !== null && event.capacity !== undefined) { %>
+      <p><strong>Capacity:</strong> <%= event.capacity %></p>
+    <% } %>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

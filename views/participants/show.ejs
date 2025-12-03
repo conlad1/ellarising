@@ -1,13 +1,23 @@
-<%- include('../partials/header', { title: 'Participant Details', currentUser }) %>
+<%- include('../partials/header', { title: 'Participant Details', currentUser, currentPath: '/participants' }) %>
 
 <section class="section">
+  <a href="/participants" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Participants</a>
   <div class="section-header header-with-actions">
     <div>
       <h1 class="section-title"><%= participant.first_name %> <%= participant.last_name %></h1>
       <p class="section-subtitle">Participant profile & milestones.</p>
     </div>
-    <% if (currentUser && currentUser.role === 'manager') { %>
-      <a href="/participants/<%= participant.id %>/edit" class="btn btn-outline">Edit</a>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/participants/<%= participant.id %>/edit" class="btn btn-outline">Edit</a>
+        <% if (participant.donations_count > 0) { %>
+          <span class="btn btn-outline muted" style="cursor: not-allowed; opacity: 0.6; margin-left: 0.5rem;" title="Cannot delete participant with donations (has <%= participant.donations_count %> donation<%= participant.donations_count > 1 ? 's' : '' %>)">Delete</span>
+        <% } else { %>
+          <form action="/participants/<%= participant.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+            <button class="btn btn-outline link-danger" onclick="return confirm('Delete this participant?');">Delete</button>
+          </form>
+        <% } %>
+      </div>
     <% } %>
   </div>
 
@@ -15,10 +25,12 @@
     <div class="card">
       <h2>Profile</h2>
       <p><strong>School:</strong> <%= participant.school || '-' %></p>
-      <p><strong>Grade:</strong> <%= participant.grade || '-' %></p>
       <p><strong>City:</strong> <%= participant.city || '-' %></p>
+      <p><strong>State:</strong> <%= participant.state || '-' %></p>
+      <p><strong>ZIP Code:</strong> <%= participant.zip || '-' %></p>
       <p><strong>Email:</strong> <%= participant.email || '-' %></p>
       <p><strong>Phone:</strong> <%= participant.phone || '-' %></p>
+      <p><strong>Field of Interest:</strong> <%= participant.field_of_interest || '-' %></p>
     </div>
 
     <div class="card">

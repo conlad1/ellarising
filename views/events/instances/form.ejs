@@ -1,0 +1,59 @@
+<%- include('../../partials/header', { title: formTitle || 'Event Instance Form', currentUser, currentPath: '/events/admin' }) %>
+
+<section class="section">
+  <a href="/events/admin" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Event Instances</a>
+  <div class="section-header">
+    <h1 class="section-title"><%= formTitle || 'Event Instance' %></h1>
+    <p class="section-subtitle">Enter event instance information below.</p>
+  </div>
+
+  <div class="card card-narrow">
+    <form action="<%= formAction %>" method="POST" class="form">
+      <% if (typeof csrfToken !== 'undefined') { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+
+      <div class="form-group">
+        <label for="event_id">Event</label>
+        <select id="event_id" name="event_id" required>
+          <option value="">Select an event</option>
+          <% if (events && events.length > 0) { %>
+            <% events.forEach(e => { %>
+              <option value="<%= e.id %>" <%= event?.event_id && event.event_id == e.id ? 'selected' : '' %>>
+                <%= e.name %>
+              </option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="start_time">Start Date & Time</label>
+          <input id="start_time" name="start_time" type="datetime-local" value="<%= event?.start_time || '' %>" required>
+        </div>
+        <div class="form-group">
+          <label for="end_time">End Date & Time</label>
+          <input id="end_time" name="end_time" type="datetime-local" value="<%= event?.end_time || '' %>">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="location">Location</label>
+        <input id="location" name="location" type="text" value="<%= event?.location || '' %>">
+      </div>
+
+      <div class="form-group">
+        <label for="capacity">Capacity</label>
+        <input id="capacity" name="capacity" type="number" min="0" value="<%= event?.capacity || '' %>">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Save</button>
+        <a href="/events/admin" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../../partials/footer') %>

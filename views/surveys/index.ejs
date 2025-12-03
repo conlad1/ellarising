@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Surveys – Admin', currentUser }) %>
+<%- include('../partials/header', { title: 'Surveys – Admin', currentUser, currentPath: '/surveys' }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <% if (currentUser && currentUser.role === 'manager') { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <a href="/surveys/new" class="btn btn-primary">Record Survey</a>
     <% } %>
   </div>
@@ -25,7 +25,8 @@
   <% if (!surveys || surveys.length === 0) { %>
     <p>No surveys recorded yet.</p>
   <% } else { %>
-    <table class="table">
+    <div class="table-container">
+      <table class="table">
       <thead>
         <tr>
           <th>Participant</th>
@@ -47,19 +48,13 @@
             <td><%= s.usefulness || '-' %></td>
             <td><%= s.recommend || '-' %></td>
             <td class="table-actions">
-              <a href="/surveys/<%= s.id %>" class="link-small">View</a>
-              <% if (currentUser && currentUser.role === 'manager') { %>
-                | <a href="/surveys/<%= s.id %>/edit" class="link-small">Edit</a>
-                |
-                <form action="/surveys/<%= s.id %>/delete" method="POST" class="inline-form">
-                  <button class="link-small link-danger" onclick="return confirm('Delete this survey?');">Delete</button>
-                </form>
-              <% } %>
+              <a href="/surveys/<%= s.id %>" class="link-small">View/edit record details</a>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+    </div>
   <% } %>
 </section>
 

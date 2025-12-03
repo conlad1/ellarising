@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'User Maintenance – Ella Rises Admin', currentUser }) %>
+<%- include('../partials/header', { title: 'User Maintenance – Ella Rises Admin', currentUser, currentPath: '/users' }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <% if (currentUser && currentUser.role === 'manager') { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <a href="/users/new" class="btn btn-primary">Add User</a>
     <% } %>
   </div>
@@ -25,7 +25,8 @@
   <% if (!users || users.length === 0) { %>
     <p>No users found.</p>
   <% } else { %>
-    <table class="table">
+    <div class="table-container">
+      <table class="table">
       <thead>
         <tr>
           <th>Username</th>
@@ -39,18 +40,13 @@
             <td><%= u.username %></td>
             <td class="tag"><%= u.role %></td>
             <td class="table-actions">
-              <a href="/users/<%= u.id %>/edit" class="link-small">Edit</a>
-              <% if (u.id !== currentUser.id) { %>
-                |
-                <form action="/users/<%= u.id %>/delete" method="POST" class="inline-form">
-                  <button class="link-small link-danger" onclick="return confirm('Delete this user?');">Delete</button>
-                </form>
-              <% } %>
+              <a href="/users/<%= u.id %>" class="link-small">View/edit record details</a>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+    </div>
   <% } %>
 </section>
 

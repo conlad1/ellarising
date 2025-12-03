@@ -81,6 +81,102 @@ p {
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
 }
 
+.navbar-admin {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-bottom: 3px solid var(--er-accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.navbar-admin .logo-text {
+  color: #ffffff;
+}
+
+.navbar-admin .nav-link {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.navbar-admin .nav-link:hover {
+  color: #ffffff;
+}
+
+.navbar-admin .nav-link.active {
+  color: var(--er-accent);
+  background: rgba(245, 194, 107, 0.15);
+}
+
+.navbar-admin .nav-link.active::after {
+  background: var(--er-accent);
+}
+
+.navbar-admin .nav-user {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.nav-separator {
+  width: 1px;
+  height: 20px;
+  background: rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  margin: 0 0.25rem;
+}
+
+.navbar-admin .nav-separator {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.navbar-admin .btn-outline {
+  border-color: rgba(255, 255, 255, 0.4);
+  color: rgba(255, 255, 255, 0.9);
+  background: transparent;
+}
+
+.navbar-admin .btn-outline:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+  color: #ffffff;
+}
+
+.navbar-admin .btn-accent {
+  background: var(--er-accent);
+  color: #ffffff;
+}
+
+.navbar-admin .btn-accent:hover {
+  background: var(--er-accent-dark);
+}
+
+.navbar-admin .btn-text {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.navbar-admin .btn-text:hover {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.tag {
+  display: inline-block;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background: var(--er-primary);
+  color: #ffffff;
+}
+
+.tag-small {
+  padding: 0.15rem 0.4rem;
+  font-size: 0.7rem;
+}
+
+.navbar-admin .tag {
+  background: rgba(245, 194, 107, 0.2);
+  color: var(--er-accent);
+  border: 1px solid rgba(245, 194, 107, 0.3);
+}
+
 .navbar-left,
 .navbar-center,
 .navbar-right {
@@ -127,6 +223,7 @@ p {
   text-decoration: none;
   position: relative;
   padding-bottom: 0.15rem;
+  transition: all 0.2s ease;
 }
 
 .nav-link::after {
@@ -142,6 +239,20 @@ p {
 
 .nav-link:hover::after {
   width: 100%;
+}
+
+.nav-link.active {
+  font-weight: 600;
+  color: var(--er-primary-dark);
+  background: rgba(242, 156, 159, 0.1);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+}
+
+.nav-link.active::after {
+  width: 100%;
+  height: 2px;
+  bottom: 0.15rem;
 }
 
 .nav-user {
@@ -392,19 +503,50 @@ p {
    Tables
 ============================ */
 
+.table-container {
+  width: 100%;
+  max-height: 600px;
+  overflow-x: auto;
+  overflow-y: auto;
+  margin-top: 1rem;
+  border-radius: var(--er-border-radius);
+  box-shadow: var(--er-shadow);
+  background: #ffffff;
+}
+
+/* Custom scrollbar styling for table containers */
+.table-container::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+  background: #f5f5f5;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+  background: #ccc;
+  border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+  background: #999;
+}
+
 .table {
   width: 100%;
+  min-width: 600px;
   border-collapse: collapse;
-  margin-top: 1rem;
   font-size: 0.9rem;
   background: #ffffff;
-  border-radius: var(--er-border-radius);
-  overflow: hidden;
-  box-shadow: var(--er-shadow);
 }
 
 .table thead {
   background: #fff3ec;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
 .table th,

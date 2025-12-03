@@ -1,0 +1,29 @@
+<%- include('../partials/header', { title: 'Milestone Details', currentUser, currentPath: '/milestones' }) %>
+
+<section class="section">
+  <a href="/milestones" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Milestones</a>
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title"><%= milestone.title %></h1>
+      <p class="section-subtitle">Milestone definition.</p>
+    </div>
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/milestones/<%= milestone.id %>/edit" class="btn btn-outline">Edit</a>
+        <form action="/milestones/<%= milestone.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+          <button class="btn btn-outline link-danger" onclick="return confirm('Delete this milestone?');">Delete</button>
+        </form>
+      </div>
+    <% } %>
+  </div>
+
+  <div class="card">
+    <h2>Details</h2>
+    <p><strong>Title:</strong> <%= milestone.title %></p>
+    <p><strong>Description:</strong></p>
+    <p><%= milestone.description || 'No description provided.' %></p>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+
