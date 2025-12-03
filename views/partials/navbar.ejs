@@ -50,7 +50,7 @@
     <a href="/donate" class="nav-link <%= isActiveLink('/donate', current) ? 'active' : '' %>">Donate</a>
     <a href="/impact" class="nav-link <%= isActiveLink('/impact', current) ? 'active' : '' %>">Impact</a>
 
-    <% if (currentUser && currentUser.role === 'admin') { %>
+    <% if (currentUser) { %>
       <span class="nav-separator"></span>
       <a href="/dashboard" class="nav-link <%= isActiveLink('/dashboard', current) ? 'active' : '' %>">Dashboard</a>
       <a href="/participants" class="nav-link <%= isActiveLink('/participants', current) ? 'active' : '' %>">Participants</a>

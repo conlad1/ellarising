@@ -625,7 +625,7 @@ app.get('/dashboard', requireLogin, async (req, res) => {
  * Supports case-insensitive search by username or email.
  * Passwords are never exposed (sanitized before display).
  */
-app.get('/users', requireManager, async (req, res) => {
+app.get('/users', requireLogin, async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
     let query = db('users').select('user_id', 'email', 'username', 'role');
@@ -693,7 +693,7 @@ app.post('/users', requireManager, async (req, res) => {
   }
 });
 
-app.get('/users/:id', requireManager, async (req, res) => {
+app.get('/users/:id', requireLogin, async (req, res) => {
   try {
     const userData = await db('users').where({ user_id: req.params.id }).select('user_id', 'email', 'username', 'role').first();
     if (!userData) {
