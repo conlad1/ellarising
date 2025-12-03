@@ -1,39 +1,133 @@
 <%- include('../partials/header', { title: 'Impact – Ella Rises', currentUser, currentPath: '/impact' }) %>
 
+<style>
+  /* Banner */
+  .impact-banner-wrapper {
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto 2.5rem auto;
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  }
+
+  .impact-banner-img {
+    width: 100%;
+    height: 320px;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Section header */
+  .impact-header {
+    text-align: center;
+    margin-bottom: 2.5rem;
+  }
+
+  .impact-header h2 {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    color: #333;
+  }
+
+  .impact-header p {
+    font-size: 1.05rem;
+    color: #666;
+    max-width: 680px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* Cards */
+  .impact-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1.5rem;
+    max-width: 1000px;
+    margin: 0 auto 4rem auto;
+  }
+
+  .impact-card {
+    background: white;
+    border-radius: 18px;
+    padding: 1.75rem 1.5rem;
+    border: 1px solid #eee;
+    box-shadow: 0 3px 14px rgba(0,0,0,0.04);
+    transition: 0.2s ease;
+  }
+
+  .impact-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+  }
+
+  .impact-card h3 {
+    margin: 0 0 0.75rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    color: #444;
+  }
+
+  .impact-card strong {
+    font-size: 1.8rem;
+    color: #f06292;
+    font-weight: 700;
+  }
+
+  .impact-card p {
+    margin: 0;
+    color: #666;
+    line-height: 1.4;
+  }
+
+  @media (max-width: 768px) {
+    .impact-banner-img {
+      height: 220px;
+    }
+  }
+</style>
+
+<!-- Cleaner Banner -->
+<div class="impact-banner-wrapper">
+  <img src="/images/impact.avif" alt="Ella Rises Impact Banner" class="impact-banner-img">
+</div>
+
 <section class="section">
-  <div class="section-header">
-    <h2 class="section-title">Our Impact</h2>
-    <p class="section-subtitle">
-      This internal portal helps us track satisfaction, usefulness, and long-term successes
-      like STEAM majors and careers.
+
+  <!-- Matching Header -->
+  <div class="impact-header">
+    <h2>Our Impact</h2>
+    <p>
+      Ella Rises tracks key indicators of growth — from event satisfaction to 
+      meaningful milestones — helping us understand how our programs shape future leaders.
     </p>
   </div>
 
-  <div class="impact-highlight">
+  <!-- Impact Metrics Grid -->
+  <div class="impact-grid">
+
     <div class="impact-card">
-      <h3>Participants</h3>
-      <p>
-        <strong><%= impactStats?.participantsCount || '---' %></strong>
-        girls engaged in our programs.
-      </p>
+      <h3>Participants Reached</h3>
+      <p><strong><%= impactStats?.participantsCount || '---' %></strong></p>
     </div>
 
     <div class="impact-card">
-      <h3>Average Event Satisfaction</h3>
+      <h3>Average Satisfaction</h3>
       <p>
-        <strong><%= impactStats?.avgSatisfaction || '--' %>/5</strong>
-        based on post-event surveys.
+        <strong><%= impactStats?.avgSatisfaction || '--' %></strong>
+        / 5
       </p>
     </div>
 
     <div class="impact-card">
       <h3>Milestones Achieved</h3>
-      <p>
-        <strong><%= impactStats?.milestonesAchieved || '---' %></strong>
-        tracked milestones toward education goals.
-      </p>
+      <p><strong><%= impactStats?.milestonesAchieved || '---' %></strong></p>
     </div>
+
   </div>
+
 </section>
 
 <%- include('../partials/footer') %>

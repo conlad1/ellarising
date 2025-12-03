@@ -2,7 +2,7 @@
 
 <style>
   .events-schedule {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
   }
 
@@ -21,16 +21,13 @@
     width: 13px;
     height: 13px;
     border-radius: 50%;
-    background: #4a90e2;
-    border: 2px solid white;
-    box-shadow: 0 0 0 2px #4a90e2;
+    background: #f06292;
+    border: 2px solid #fff;
+    box-shadow: 0 0 0 2px #f06292;
   }
 
   .day-header {
-    display: flex;
-    align-items: center;
     margin-bottom: 1rem;
-    gap: 1rem;
   }
 
   .day-date {
@@ -40,36 +37,59 @@
   }
 
   .day-label {
-    font-size: 0.875rem;
-    color: #666;
+    font-size: 0.85rem;
+    color: #777;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.08em;
   }
 
   .event-item {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
-    padding: 1.25rem;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e5e5e5;
+    padding: 1rem 1.25rem;
     margin-bottom: 1rem;
-    transition: box-shadow 0.2s;
+    display: flex;
+    flex-direction: row; /* text left, image right */
+    justify-content: space-between;
+    gap: 1rem;
+    transition: box-shadow 0.15s ease, transform 0.1s ease;
   }
 
   .event-item:hover {
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.06);
+    transform: translateY(-1px);
+  }
+
+  .event-content {
+    flex: 1 1 auto;
+  }
+
+  .event-image-wrap {
+    flex: 0 0 160px;
+    display: flex;
+    justify-content: flex-end;
+  }
+
+  .event-image {
+    width: 160px;
+    height: 110px;
+    border-radius: 12px;
+    object-fit: cover;
+    margin-left: 12px;
   }
 
   .event-time {
-    font-size: 0.875rem;
-    color: #4a90e2;
+    font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    color: #f06292;
+    margin-bottom: 0.35rem;
   }
 
   .event-title {
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 600;
-    margin: 0 0 0.5rem 0;
+    margin: 0 0 0.4rem 0;
     color: #333;
   }
 
@@ -77,38 +97,58 @@
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     color: #666;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
   }
 
-  .event-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
+  .event-meta-item strong {
+    font-weight: 600;
   }
 
   .event-description {
-    font-size: 0.9375rem;
+    font-size: 0.95rem;
     color: #555;
-    line-height: 1.5;
     margin: 0;
   }
 
   .filters-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
     gap: 1rem;
-    margin-bottom: 2rem;
+    margin-bottom: 2.25rem;
+  }
+
+  .filters .form-group label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    color: #888;
+  }
+
+  .filters .form-group input,
+  .filters .form-group select {
+    margin-top: 0.35rem;
   }
 
   @media (max-width: 768px) {
-    .filters-grid {
-      grid-template-columns: 1fr;
-    }
-    
     .schedule-day {
       padding-left: 1rem;
+    }
+
+    .event-item {
+      flex-direction: column;        /* stack on mobile */
+    }
+
+    .event-image-wrap {
+      justify-content: center;
+    }
+
+    .event-image {
+      width: 100%;
+      height: 180px;
+      margin-left: 0;
+      margin-top: 0.5rem;
     }
   }
 </style>
@@ -116,62 +156,65 @@
 <section class="section">
   <div class="section-header">
     <h1 class="section-title">Upcoming Events</h1>
-    <p class="section-subtitle">Join us at upcoming workshops, summits, and performances.</p>
+    <p class="section-subtitle">
+      Join us at upcoming workshops, summits, and performances.
+    </p>
   </div>
 
   <% if (!events || events.length === 0) { %>
     <p>No upcoming events yet. Check back soon!</p>
   <% } else { %>
-    <!-- Store events data as JSON for client-side processing -->
+
+    <!-- Pass events to JS as JSON -->
     <script id="eventsData" type="application/json">
-      <%- JSON.stringify(events) %>
+      <%- JSON.stringify(events || []) %>
     </script>
 
+    <!-- Filters -->
     <form class="filters filters-grid" id="eventsFilter">
       <div class="form-group">
         <label for="searchEvents">Search</label>
-        <input id="searchEvents" name="search" type="text" placeholder="Search events...">
+        <input id="searchEvents" type="text" placeholder="Search events...">
       </div>
       <div class="form-group">
         <label for="filterType">Event Type</label>
-        <select id="filterType" name="type">
+        <select id="filterType">
           <option value="">All Types</option>
         </select>
       </div>
       <div class="form-group">
         <label for="filterLocation">Location</label>
-        <select id="filterLocation" name="location">
+        <select id="filterLocation">
           <option value="">All Locations</option>
         </select>
       </div>
       <div class="form-group">
         <label for="filterTime">Time of Day</label>
-        <select id="filterTime" name="time">
+        <select id="filterTime">
           <option value="">All Times</option>
-          <option value="morning">Morning (6am - 12pm)</option>
-          <option value="afternoon">Afternoon (12pm - 5pm)</option>
-          <option value="evening">Evening (5pm - 9pm)</option>
-          <option value="night">Night (9pm - 12am)</option>
+          <option value="morning">Morning (6am–12pm)</option>
+          <option value="afternoon">Afternoon (12pm–5pm)</option>
+          <option value="evening">Evening (5pm–9pm)</option>
+          <option value="night">Night (9pm–12am)</option>
         </select>
       </div>
     </form>
 
-    <div id="noResults" style="display: none;">
+    <div id="noResults" style="display:none;">
       <p>No events match your filters.</p>
     </div>
 
-    <div class="events-schedule" id="eventsContainer">
-      <!-- Events will be rendered here by JavaScript -->
-    </div>
+    <div class="events-schedule" id="eventsContainer"></div>
+
   <% } %>
 </section>
 
 <script>
-  (function() {
-    const eventsDataScript = document.getElementById('eventsData');
-    if (!eventsDataScript) return;
+  (function () {
+    const dataTag = document.getElementById('eventsData');
+    if (!dataTag) return;
 
-    const rawEvents = JSON.parse(eventsDataScript.textContent);
+    const rawEvents = JSON.parse(dataTag.textContent || '[]');
     const eventsContainer = document.getElementById('eventsContainer');
     const noResults = document.getElementById('noResults');
     const searchInput = document.getElementById('searchEvents');
@@ -179,147 +222,153 @@
     const locationFilter = document.getElementById('filterLocation');
     const timeFilter = document.getElementById('filterTime');
 
-    // Format dates in client's local timezone
-    function formatEventDate(dateTimeString) {
-      if (!dateTimeString) return null;
-      const date = new Date(dateTimeString);
+    function formatDateInfo(dt) {
+      if (!dt) return null;
+      const d = new Date(dt);
       return {
-        date: date,
-        dateString: date.toISOString().split('T')[0],
-        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
-        dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'long' }),
-        month: date.toLocaleDateString('en-US', { month: 'long' }),
-        day: date.getDate(),
-        year: date.getFullYear(),
-        hour: date.getHours(),
+        raw: d,
+        dateKey: d.toISOString().split('T')[0],
+        displayDate: d.toLocaleDateString('en-US', {
+          weekday: 'long',
+          month: 'long',
+          day: 'numeric',
+          year: 'numeric'
+        }),
+        time: d.toLocaleTimeString('en-US', {
+          hour: 'numeric',
+          minute: '2-digit',
+          hour12: true
+        }),
+        hour: d.getHours()
       };
     }
 
-    // Process events with local timezone formatting
-    const processedEvents = rawEvents.map(event => {
-      const dateInfo = formatEventDate(event.dateTime);
+    const events = rawEvents.map(ev => {
+      const di = formatDateInfo(ev.dateTime);
       return {
-        ...event,
-        dateInfo: dateInfo,
-        dateKey: dateInfo ? dateInfo.dateString : 'No Date',
-        formattedTime: dateInfo ? dateInfo.time : 'Time TBD',
-        formattedDate: dateInfo 
-          ? `${dateInfo.dayOfWeek}, ${dateInfo.month} ${dateInfo.day}, ${dateInfo.year}`
-          : 'Date TBD',
+        ...ev,
+        dateInfo: di,
+        dateKey: di ? di.dateKey : 'TBD'
       };
     }).sort((a, b) => {
       if (!a.dateInfo) return 1;
       if (!b.dateInfo) return -1;
-      return a.dateInfo.date - b.dateInfo.date;
+      return a.dateInfo.raw - b.dateInfo.raw;
     });
 
-    // Populate filter dropdowns
-    const uniqueTypes = [...new Set(processedEvents.map(e => e.type))].sort();
-    const uniqueLocations = [...new Set(processedEvents
-      .filter(e => e.location && e.location !== 'TBD')
-      .map(e => e.location))].sort();
+    // populate filter dropdowns
+    const types = [...new Set(events.map(e => e.type).filter(Boolean))].sort();
+    const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
 
-    uniqueTypes.forEach(type => {
-      const option = document.createElement('option');
-      option.value = type;
-      option.textContent = type;
-      typeFilter.appendChild(option);
+    types.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      typeFilter.appendChild(opt);
     });
 
-    uniqueLocations.forEach(location => {
-      const option = document.createElement('option');
-      option.value = location;
-      option.textContent = location;
-      locationFilter.appendChild(option);
+    locations.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      locationFilter.appendChild(opt);
     });
 
-    // Group events by date (in local timezone)
-    function groupEventsByDate(events) {
-      const grouped = {};
-      events.forEach(event => {
-        const dateKey = event.dateKey || 'No Date';
-        if (!grouped[dateKey]) {
-          grouped[dateKey] = [];
-        }
-        grouped[dateKey].push(event);
-      });
-
-      // Sort events within each day by time
-      Object.keys(grouped).forEach(dateKey => {
-        grouped[dateKey].sort((a, b) => {
-          if (!a.dateInfo) return 1;
-          if (!b.dateInfo) return -1;
-          return a.dateInfo.date - b.dateInfo.date;
-        });
-      });
-
-      return grouped;
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
     }
 
-    // Render events
-    function renderEvents(eventsToRender) {
-      if (eventsToRender.length === 0) {
+    // map type -> image path
+    function getEventImage(type) {
+      const t = (type || '').toLowerCase();
+      if (t.includes('annual')) return '/images/annual_conference.jpg';
+      if (t.includes('art')) return '/images/arts.jpg';
+      if (t.includes('leader')) return '/images/leadership.jpg';
+      if (t.includes('stem') || t.includes('steam')) return '/images/steam.jpg';
+      return '';
+    }
+
+    function timeOfDay(hour) {
+      if (hour == null) return '';
+      if (hour >= 6 && hour < 12) return 'morning';
+      if (hour >= 12 && hour < 17) return 'afternoon';
+      if (hour >= 17 && hour < 21) return 'evening';
+      return 'night';
+    }
+
+    function groupByDate(list) {
+      const map = {};
+      list.forEach(ev => {
+        const key = ev.dateKey || 'TBD';
+        if (!map[key]) map[key] = [];
+        map[key].push(ev);
+      });
+      return map;
+    }
+
+    function render(list) {
+      if (!list.length) {
         eventsContainer.innerHTML = '';
         noResults.style.display = 'block';
         return;
       }
-
       noResults.style.display = 'none';
-      const grouped = groupEventsByDate(eventsToRender);
-      const sortedDates = Object.keys(grouped).sort((a, b) => {
-        if (a === 'No Date') return 1;
-        if (b === 'No Date') return -1;
+
+      const grouped = groupByDate(list);
+      const keys = Object.keys(grouped).sort((a, b) => {
+        if (a === 'TBD') return 1;
+        if (b === 'TBD') return -1;
         return new Date(a) - new Date(b);
       });
 
       let html = '';
-      sortedDates.forEach(dateKey => {
+      keys.forEach(dateKey => {
         const dayEvents = grouped[dateKey];
-        const firstEvent = dayEvents[0];
+        const first = dayEvents[0];
+        const displayDate = first.dateInfo
+          ? first.dateInfo.displayDate
+          : 'Date To Be Determined';
 
         html += `
-          <div class="schedule-day" 
-               data-date="${dateKey.toLowerCase()}"
-               data-date-key="${dateKey}">
+          <div class="schedule-day">
             <div class="day-header">
-              <div>
-                ${dateKey !== 'No Date' 
-                  ? `<div class="day-date">${firstEvent.formattedDate}</div>
-                     <div class="day-label">${dayEvents.length} ${dayEvents.length === 1 ? 'Event' : 'Events'}</div>`
-                  : '<div class="day-date">Date TBD</div>'}
-              </div>
+              <div class="day-date">${escapeHtml(displayDate)}</div>
+              <div class="day-label">${dayEvents.length} ${dayEvents.length === 1 ? 'Event' : 'Events'}</div>
             </div>
         `;
 
-        dayEvents.forEach(event => {
-          const name = (event.name || '').toLowerCase();
-          const type = (event.type || '').toLowerCase();
-          const location = (event.location || '').toLowerCase();
-          const date = (event.dateKey || '').toLowerCase();
-          const time = (event.formattedTime || '').toLowerCase();
-          const hour = event.dateInfo ? event.dateInfo.hour : '';
-          const description = (event.description || '').toLowerCase();
+        dayEvents.forEach(ev => {
+          const di = ev.dateInfo;
+          const time = di ? di.time : 'Time TBD';
+          const imgSrc = getEventImage(ev.type);
+          const imgHtml = imgSrc
+            ? `
+              <div class="event-image-wrap">
+                <img src="${imgSrc}" alt="${escapeHtml(ev.type)} event" class="event-image">
+              </div>
+            `
+            : '';
 
           html += `
-            <div class="event-item event-card"
-                 data-name="${name}"
-                 data-type="${type}"
-                 data-location="${location}"
-                 data-date="${date}"
-                 data-time="${time}"
-                 data-time-raw="${hour}"
-                 data-description="${description}">
-              <div class="event-time">${event.formattedTime}</div>
-              <h3 class="event-title">${escapeHtml(event.name)}</h3>
-              <div class="event-meta">
-                <span class="event-meta-item">
-                  <strong>Type:</strong> ${escapeHtml(event.type)}
-                </span>
-                <span class="event-meta-item">
-                  <strong>Location:</strong> ${escapeHtml(event.location)}
-                </span>
+            <div class="event-item">
+              <div class="event-content">
+                <div class="event-time">${time}</div>
+                <h3 class="event-title">${escapeHtml(ev.name)}</h3>
+                <div class="event-meta">
+                  <span class="event-meta-item">
+                    <strong>Type:</strong> ${escapeHtml(ev.type || 'TBD')}
+                  </span>
+                  <span class="event-meta-item">
+                    <strong>Location:</strong> ${escapeHtml(ev.location || 'TBD')}
+                  </span>
+                </div>
+                ${ev.description
+                  ? `<p class="event-description">${escapeHtml(ev.description)}</p>`
+                  : ''}
               </div>
-              ${event.description ? `<p class="event-description">${escapeHtml(event.description)}</p>` : ''}
+              ${imgHtml}
             </div>
           `;
         });
@@ -330,64 +379,44 @@
       eventsContainer.innerHTML = html;
     }
 
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
-    }
+    function applyFilters() {
+      const q = (searchInput.value || '').toLowerCase();
+      const typeVal = (typeFilter.value || '').toLowerCase();
+      const locVal = (locationFilter.value || '').toLowerCase();
+      const timeVal = (timeFilter.value || '').toLowerCase();
 
-    function getTimeOfDay(hour) {
-      if (hour === '' || hour === null || hour === undefined) return '';
-      const h = parseInt(hour);
-      if (h >= 6 && h < 12) return 'morning';
-      if (h >= 12 && h < 17) return 'afternoon';
-      if (h >= 17 && h < 21) return 'evening';
-      if (h >= 21 || h < 6) return 'night';
-      return '';
-    }
+      const filtered = events.filter(ev => {
+        const name = (ev.name || '').toLowerCase();
+        const type = (ev.type || '').toLowerCase();
+        const loc = (ev.location || '').toLowerCase();
+        const desc = (ev.description || '').toLowerCase();
+        const tod = ev.dateInfo ? timeOfDay(ev.dateInfo.hour) : '';
 
-    // Filter events
-    function filterEvents() {
-      const searchTerm = (searchInput?.value || '').toLowerCase();
-      const typeValue = (typeFilter?.value || '').toLowerCase();
-      const locationValue = (locationFilter?.value || '').toLowerCase();
-      const timeValue = (timeFilter?.value || '').toLowerCase();
+        const matchesSearch =
+          !q ||
+          name.includes(q) ||
+          type.includes(q) ||
+          loc.includes(q) ||
+          desc.includes(q);
 
-      const filtered = processedEvents.filter(event => {
-        const name = (event.name || '').toLowerCase();
-        const type = (event.type || '').toLowerCase();
-        const location = (event.location || '').toLowerCase();
-        const date = (event.dateKey || '').toLowerCase();
-        const time = (event.formattedTime || '').toLowerCase();
-        const description = (event.description || '').toLowerCase();
-        const hour = event.dateInfo ? event.dateInfo.hour : '';
+        const matchesType = !typeVal || type === typeVal;
+        const matchesLoc = !locVal || loc === locVal;
+        const matchesTime = !timeVal || tod === timeVal;
 
-        const matchesSearch = !searchTerm || 
-          name.includes(searchTerm) || 
-          type.includes(searchTerm) || 
-          location.includes(searchTerm) || 
-          date.includes(searchTerm) || 
-          time.includes(searchTerm) ||
-          description.includes(searchTerm);
-
-        const matchesType = !typeValue || type === typeValue.toLowerCase();
-        const matchesLocation = !locationValue || location === locationValue.toLowerCase();
-        const matchesTime = !timeValue || getTimeOfDay(hour) === timeValue;
-
-        return matchesSearch && matchesType && matchesLocation && matchesTime;
+        return matchesSearch && matchesType && matchesLoc && matchesTime;
       });
 
-      renderEvents(filtered);
+      render(filtered);
     }
 
-    // Initial render
-    renderEvents(processedEvents);
+    // initial render
+    render(events);
 
-    // Add event listeners
-    if (searchInput) searchInput.addEventListener('input', filterEvents);
-    if (typeFilter) typeFilter.addEventListener('change', filterEvents);
-    if (locationFilter) locationFilter.addEventListener('change', filterEvents);
-    if (timeFilter) timeFilter.addEventListener('change', filterEvents);
+    // listeners
+    searchInput.addEventListener('input', applyFilters);
+    typeFilter.addEventListener('change', applyFilters);
+    locationFilter.addEventListener('change', applyFilters);
+    timeFilter.addEventListener('change', applyFilters);
   })();
 </script>
 

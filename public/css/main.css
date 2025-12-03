@@ -769,3 +769,62 @@ textarea {
     padding-inline: 1rem;
   }
 }
+
+/* HERO IMAGE (main logo) */
+.hero-photo {
+  width: 380px;
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+}
+
+/* Section card images */
+.card-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.hero-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.card-img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+/* Better spacing for cards on programs page */
+.card h2 {
+  margin-top: 0;
+}
+
+/* Move mariachi image upward so faces are centered */
+.mariachi-img {
+  object-position: center top; /* moves the visible crop upward */
+}
+
+/* Impact page banner */
+.impact-banner {
+  width: 100%;
+  max-height: 260px;
+  overflow: hidden;
+  margin-bottom: 2rem;
+}
+
+.impact-banner-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
