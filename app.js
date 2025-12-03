@@ -15,6 +15,7 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const knex = require('knex');
+const bcrypt = require('bcrypt');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -469,17 +470,31 @@ app.get('/login', (req, res) => {
  * On success: Creates session with user info (id, username, role) and redirects to dashboard.
  * On failure: Shows error message and returns to login page.
  * 
- * Note: Current implementation uses plain text password comparison for simplicity.
- * In production, should use password hashing (bcrypt) for security.
+ * Uses bcrypt to securely compare the provided password with the hashed password stored in the database.
  */
 app.post('/login', async (req, res) => {
   try {
     const { username, password } = req.body || {};
+    
+    if (!username || !password) {
+      req.session.error = 'Please provide both username and password.';
+      return res.redirect('/login');
+    }
+    
+    // Find user by username only (not password, since it's hashed)
     const user = await db('users')
-      .where({ username, password })
+      .where({ username })
       .first();
 
     if (!user) {
+      req.session.error = 'Invalid username or password.';
+      return res.redirect('/login');
+    }
+
+    // Compare provided password with stored hash using bcrypt
+    const passwordMatch = await bcrypt.compare(password, user.password);
+    
+    if (!passwordMatch) {
       req.session.error = 'Invalid username or password.';
       return res.redirect('/login');
     }
@@ -642,10 +657,21 @@ app.get('/users/new', requireManager, (req, res) => {
 app.post('/users', requireManager, async (req, res) => {
   try {
     const { email, username, password, role } = req.body;
+    
+    if (!username) {
+      req.session.error = 'Username is required.';
+      return res.redirect('/users/new');
+    }
+    
+    // Hash the password before storing (use default salt rounds of 10)
+    const hashedPassword = password 
+      ? await bcrypt.hash(password, 10)
+      : await bcrypt.hash('password', 10);
+    
     await db('users').insert({
       email: email || null,
       username,
-      password: password || 'password',
+      password: hashedPassword,
       role: role === 'admin' ? 'admin' : 'user',
     });
     req.session.success = 'User created.';
@@ -722,8 +748,9 @@ app.post('/users/:id', requireManager, async (req, res) => {
       username,
       role: role === 'admin' ? 'admin' : 'user',
     };
+    // Hash the password before storing if a new password is provided
     if (password) {
-      updateData.password = password;
+      updateData.password = await bcrypt.hash(password, 10);
     }
     await db('users').where({ user_id: req.params.id }).update(updateData);
     req.session.success = 'User updated.';
