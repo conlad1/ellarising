@@ -1,0 +1,108 @@
+<%- include('../../partials/header', { title: 'Event Templates', currentUser, currentPath: '/events/templates' }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <a href="/events/admin" class="btn btn-text" style="margin-bottom: 0.5rem; display: inline-block;">← Back to Event Instances</a>
+      <h1 class="section-title">Event Templates</h1>
+      <p class="section-subtitle">Manage reusable event definitions.</p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <a href="/events/templates/new" class="btn btn-primary">Create Template</a>
+    <% } %>
+  </div>
+
+  <form class="filters filters-inline" id="templatesFilter">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by name, type, or description">
+    </div>
+  </form>
+
+  <div id="noResults" style="display: none;">
+    <p>No templates match your filters.</p>
+  </div>
+
+  <% if (!templates || templates.length === 0) { %>
+    <p>No event templates created yet.</p>
+  <% } else { %>
+    <div class="table-container">
+      <table class="table" id="templatesTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Default Capacity</th>
+            <th class="table-actions">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% templates.forEach(t => { %>
+            <tr class="template-row"
+                data-name="<%= (t.name || '').toLowerCase() %>"
+                data-type="<%= (t.type || '').toLowerCase() %>"
+                data-description="<%= (t.description || '').toLowerCase() %>">
+              <td><%= t.name %></td>
+              <td><%= t.type %></td>
+              <td><%= t.default_capacity %></td>
+              <td class="table-actions">
+                <a href="/events/templates/<%= t.id %>" class="link-small">View/edit record details</a>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  <% } %>
+</section>
+
+<script>
+  (function() {
+    const searchInput = document.getElementById('q');
+    const templateRows = document.querySelectorAll('.template-row');
+    const noResults = document.getElementById('noResults');
+    const templatesTable = document.getElementById('templatesTable');
+
+    function filterTemplates() {
+      const searchTerm = (searchInput?.value || '').toLowerCase();
+      let visibleCount = 0;
+
+      templateRows.forEach(row => {
+        const name = row.dataset.name || '';
+        const type = row.dataset.type || '';
+        const description = row.dataset.description || '';
+
+        const matchesSearch = !searchTerm || 
+          name.includes(searchTerm) || 
+          type.includes(searchTerm) || 
+          description.includes(searchTerm);
+
+        if (matchesSearch) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0 && templateRows.length > 0) {
+        noResults.style.display = 'block';
+        if (templatesTable) templatesTable.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        if (templatesTable) templatesTable.style.display = '';
+      }
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterTemplates);
+    
+    // Filter on page load if there's a search term
+    if (searchInput && searchInput.value) {
+      filterTemplates();
+    }
+  })();
+</script>
+
+<%- include('../../partials/footer') %>
+

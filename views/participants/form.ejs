@@ -1,9 +1,13 @@
-<%- include('../partials/header', { title: formTitle || 'Participant Form', currentUser }) %>
+<%- include('../partials/header', { title: formTitle || 'Participant Form', currentUser, currentPath: '/participants' }) %>
 
 <section class="section">
-  <div class="card card-narrow">
+  <a href="/participants" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Participants</a>
+  <div class="section-header">
     <h1 class="section-title"><%= formTitle || 'Participant' %></h1>
+    <p class="section-subtitle">Enter participant information below.</p>
+  </div>
 
+  <div class="card card-narrow">
     <form action="<%= formAction %>" method="POST" class="form">
       <% if (typeof csrfToken !== 'undefined') { %>
         <input type="hidden" name="_csrf" value="<%= csrfToken %>">
@@ -21,16 +25,9 @@
         </div>
       </div>
 
-      <div class="form-group-inline">
-        <div class="form-group">
-          <label for="school">School</label>
-          <input id="school" name="school" type="text" value="<%= participant?.school || '' %>">
-        </div>
-
-        <div class="form-group">
-          <label for="grade">Grade</label>
-          <input id="grade" name="grade" type="text" value="<%= participant?.grade || '' %>">
-        </div>
+      <div class="form-group">
+        <label for="school">School</label>
+        <input id="school" name="school" type="text" value="<%= participant?.school || '' %>">
       </div>
 
       <div class="form-group-inline">
@@ -40,14 +37,31 @@
         </div>
 
         <div class="form-group">
-          <label for="email">Email</label>
-          <input id="email" name="email" type="email" value="<%= participant?.email || '' %>">
+          <label for="state">State</label>
+          <input id="state" name="state" type="text" value="<%= participant?.state || '' %>">
         </div>
       </div>
 
       <div class="form-group">
-        <label for="phone">Phone</label>
-        <input id="phone" name="phone" type="text" value="<%= participant?.phone || '' %>">
+        <label for="zip">ZIP Code</label>
+        <input id="zip" name="zip" type="text" value="<%= participant?.zip || '' %>">
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" value="<%= participant?.email || '' %>">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="text" value="<%= participant?.phone || '' %>">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field_of_interest">Field of Interest</label>
+        <input id="field_of_interest" name="field_of_interest" type="text" value="<%= participant?.field_of_interest || '' %>" placeholder="e.g., STEM, Arts, Business">
       </div>
 
       <div class="form-actions">

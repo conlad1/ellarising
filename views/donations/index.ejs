@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Donations – Admin', currentUser }) %>
+<%- include('../partials/header', { title: 'Donations – Admin', currentUser, currentPath: '/donations' }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
@@ -9,7 +9,7 @@
       </p>
     </div>
 
-    <% if (currentUser && currentUser.role === 'manager') { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <a href="/donations/new" class="btn btn-primary">Record Donation</a>
     <% } %>
   </div>
@@ -25,14 +25,14 @@
   <% if (!donations || donations.length === 0) { %>
     <p>No donations recorded yet.</p>
   <% } else { %>
-    <table class="table">
+    <div class="table-container">
+      <table class="table">
       <thead>
         <tr>
           <th>Donor</th>
           <th>Email</th>
           <th>Amount</th>
           <th>Date</th>
-          <th>Source</th>
           <th class="table-actions">Actions</th>
         </tr>
       </thead>
@@ -43,20 +43,14 @@
             <td><%= d.email || '-' %></td>
             <td>$<%= d.amount.toFixed ? d.amount.toFixed(2) : d.amount %></td>
             <td><%= d.date %></td>
-            <td><%= d.source || '-' %></td>
             <td class="table-actions">
-              <% if (currentUser && currentUser.role === 'manager') { %>
-                <a href="/donations/<%= d.id %>/edit" class="link-small">Edit</a>
-                |
-                <form action="/donations/<%= d.id %>/delete" method="POST" class="inline-form">
-                  <button class="link-small link-danger" onclick="return confirm('Delete this donation?');">Delete</button>
-                </form>
-              <% } %>
+              <a href="/donations/<%= d.participant_id || 'null' %>/<%= d.donation_number %>" class="link-small">View/edit record details</a>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+    </div>
   <% } %>
 </section>
 

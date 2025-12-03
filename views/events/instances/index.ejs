@@ -1,0 +1,136 @@
+<%- include('../../partials/header', { title: 'Events Admin', currentUser, currentPath: '/events/admin' }) %>
+
+<section class="section">
+  <div class="section-header header-with-actions">
+    <div>
+      <h1 class="section-title">Events</h1>
+      <p class="section-subtitle">Workshops, summits, and other Ella Rises events.</p>
+    </div>
+
+    <% if (currentUser && currentUser.role === 'admin') { %>
+      <div>
+        <a href="/events/new" class="btn btn-primary">Create Event</a>
+        <a href="/events/templates" class="btn btn-outline" style="margin-left: 0.5rem;">View/Edit Event Templates</a>
+      </div>
+    <% } %>
+  </div>
+
+  <form class="filters filters-inline" id="eventsFilter">
+    <div class="form-group">
+      <label for="q">Search</label>
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by name, type, location, or date">
+    </div>
+    <div class="form-group">
+      <label for="filterType">Type</label>
+      <select id="filterType" name="type">
+        <option value="">All Types</option>
+        <% if (events && events.length > 0) { %>
+          <% const uniqueTypes = [...new Set(events.map(e => e.type))]; %>
+          <% uniqueTypes.forEach(type => { %>
+            <option value="<%= type %>"><%= type %></option>
+          <% }) %>
+        <% } %>
+      </select>
+    </div>
+  </form>
+
+  <div id="noResults" style="display: none;">
+    <p>No events match your filters.</p>
+  </div>
+
+  <% if (!events || events.length === 0) { %>
+    <p>No events created yet.</p>
+  <% } else { %>
+    <div class="table-container">
+      <table class="table" id="eventsTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th class="table-actions">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% events.forEach(e => { %>
+          <tr class="event-row"
+              data-name="<%= (e.name || '').toLowerCase() %>"
+              data-type="<%= (e.type || '').toLowerCase() %>"
+              data-date="<%= (e.dateFormatted || '').toLowerCase() %>"
+              data-location="<%= (e.location || '').toLowerCase() %>"
+              data-capacity="<%= (e.capacity || '').toString().toLowerCase() %>">
+            <td><%= e.name %></td>
+            <td><%= e.type %></td>
+            <td><%= e.dateFormatted %></td>
+            <td><%= e.location %></td>
+            <td><%= e.capacity || '-' %></td>
+            <td class="table-actions">
+              <a href="/events/<%= e.id %>" class="link-small">View/edit record details</a>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+    </div>
+  <% } %>
+
+<script>
+  (function() {
+    const searchInput = document.getElementById('q');
+    const typeFilter = document.getElementById('filterType');
+    const eventRows = document.querySelectorAll('.event-row');
+    const noResults = document.getElementById('noResults');
+    const eventsTable = document.getElementById('eventsTable');
+
+    function filterEvents() {
+      const searchTerm = (searchInput?.value || '').toLowerCase();
+      const typeValue = (typeFilter?.value || '').toLowerCase();
+      let visibleCount = 0;
+
+      eventRows.forEach(row => {
+        const name = row.dataset.name || '';
+        const type = row.dataset.type || '';
+        const date = row.dataset.date || '';
+        const location = row.dataset.location || '';
+        const capacity = row.dataset.capacity || '';
+
+        const matchesSearch = !searchTerm || 
+          name.includes(searchTerm) || 
+          type.includes(searchTerm) || 
+          date.includes(searchTerm) || 
+          location.includes(searchTerm) || 
+          capacity.includes(searchTerm);
+
+        const matchesType = !typeValue || type === typeValue.toLowerCase();
+
+        if (matchesSearch && matchesType) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0 && eventRows.length > 0) {
+        noResults.style.display = 'block';
+        if (eventsTable) eventsTable.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        if (eventsTable) eventsTable.style.display = '';
+      }
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterEvents);
+    if (typeFilter) typeFilter.addEventListener('change', filterEvents);
+    
+    // Filter on page load if there's a search term
+    if (searchInput && searchInput.value) {
+      filterEvents();
+    }
+  })();
+</script>
+</section>
+
+<%- include('../../partials/footer') %>

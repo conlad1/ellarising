@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Login – Ella Rises Portal', currentUser }) %>
+<%- include('../partials/header', { title: 'Login – Ella Rises Portal', currentUser, currentPath: '/login' }) %>
 
 <section class="hero hero-small">
   <div class="hero-inner">
@@ -8,8 +8,12 @@
 </section>
 
 <section class="section">
+  <div class="section-header">
+    <h1 class="section-title">Login</h1>
+    <p class="section-subtitle">Enter your credentials to access the admin portal.</p>
+  </div>
+
   <div class="card card-narrow">
-    <h2 class="section-title">Login</h2>
     <form action="/login" method="POST" class="form">
       <!-- Optional CSRF token -->
       <% if (typeof csrfToken !== 'undefined') { %>

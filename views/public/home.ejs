@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Ella Rises – Empowering Future Leaders', currentUser }) %>
+<%- include('../partials/header', { title: 'Ella Rises – Empowering Future Leaders', currentUser, currentPath: '/' }) %>
 
 <section class="hero">
   <div class="hero-inner">
@@ -9,8 +9,8 @@
         and grow as confident leaders through creative workshops, mentoring, and community.
       </p>
       <div class="hero-actions">
-        <a href="/programs" class="btn btn-primary">Explore Programs</a>
-        <a href="/donate" class="btn btn-outline">Support the Mission</a>
+        <a href="./programs" class="btn btn-primary">Explore Programs</a>
+        <a href="./donate" class="btn btn-outline">Support the Mission</a>
       </div>
     </div>
     <div class="hero-image">
@@ -20,7 +20,7 @@
   </div>
 </section>
 
-<section class="section section-alt">
+<section class="section">
   <div class="section-header">
     <h2 class="section-title">What is Ella Rises?</h2>
     <p class="section-subtitle">
@@ -64,7 +64,7 @@
     </div>
     <div class="impact-card">
       <h3>Milestones Achieved</h3>
-      <p><strong><%= impactStats?.milestonesCount || '---' %></strong> tracked milestones toward education goals.</p>
+      <p><strong><%= impactStats?.milestonesAchieved || '---' %></strong> tracked milestones toward education goals.</p>
     </div>
   </div>
 

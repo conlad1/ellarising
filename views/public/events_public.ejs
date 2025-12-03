@@ -1,4 +1,117 @@
-<%- include('../partials/header', { title: 'Events – Ella Rises', currentUser }) %>
+<%- include('../partials/header', { title: 'Events – Ella Rises', currentUser, currentPath: '/events' }) %>
+
+<style>
+  .events-schedule {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  .schedule-day {
+    margin-bottom: 2rem;
+    border-left: 3px solid #e0e0e0;
+    padding-left: 1.5rem;
+    position: relative;
+  }
+
+  .schedule-day::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 0;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: #4a90e2;
+    border: 2px solid white;
+    box-shadow: 0 0 0 2px #4a90e2;
+  }
+
+  .day-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 1rem;
+  }
+
+  .day-date {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .day-label {
+    font-size: 0.875rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .event-item {
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    transition: box-shadow 0.2s;
+  }
+
+  .event-item:hover {
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  }
+
+  .event-time {
+    font-size: 0.875rem;
+    color: #4a90e2;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .event-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin: 0 0 0.5rem 0;
+    color: #333;
+  }
+
+  .event-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    font-size: 0.875rem;
+    color: #666;
+    margin-bottom: 0.75rem;
+  }
+
+  .event-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .event-description {
+    font-size: 0.9375rem;
+    color: #555;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .filters-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+  }
+
+  @media (max-width: 768px) {
+    .filters-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .schedule-day {
+      padding-left: 1rem;
+    }
+  }
+</style>
 
 <section class="section">
   <div class="section-header">
@@ -9,16 +122,273 @@
   <% if (!events || events.length === 0) { %>
     <p>No upcoming events yet. Check back soon!</p>
   <% } else { %>
-    <div class="grid grid-2">
-      <% events.forEach(event => { %>
-        <article class="card">
-          <h2><%= event.name %></h2>
-          <p class="muted"><%= event.type %> • <%= event.dateFormatted %> • <%= event.location %></p>
-          <p><%= event.description %></p>
-        </article>
-      <% }) %>
+    <!-- Store events data as JSON for client-side processing -->
+    <script id="eventsData" type="application/json">
+      <%- JSON.stringify(events) %>
+    </script>
+
+    <form class="filters filters-grid" id="eventsFilter">
+      <div class="form-group">
+        <label for="searchEvents">Search</label>
+        <input id="searchEvents" name="search" type="text" placeholder="Search events...">
+      </div>
+      <div class="form-group">
+        <label for="filterType">Event Type</label>
+        <select id="filterType" name="type">
+          <option value="">All Types</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="filterLocation">Location</label>
+        <select id="filterLocation" name="location">
+          <option value="">All Locations</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="filterTime">Time of Day</label>
+        <select id="filterTime" name="time">
+          <option value="">All Times</option>
+          <option value="morning">Morning (6am - 12pm)</option>
+          <option value="afternoon">Afternoon (12pm - 5pm)</option>
+          <option value="evening">Evening (5pm - 9pm)</option>
+          <option value="night">Night (9pm - 12am)</option>
+        </select>
+      </div>
+    </form>
+
+    <div id="noResults" style="display: none;">
+      <p>No events match your filters.</p>
+    </div>
+
+    <div class="events-schedule" id="eventsContainer">
+      <!-- Events will be rendered here by JavaScript -->
     </div>
   <% } %>
 </section>
+
+<script>
+  (function() {
+    const eventsDataScript = document.getElementById('eventsData');
+    if (!eventsDataScript) return;
+
+    const rawEvents = JSON.parse(eventsDataScript.textContent);
+    const eventsContainer = document.getElementById('eventsContainer');
+    const noResults = document.getElementById('noResults');
+    const searchInput = document.getElementById('searchEvents');
+    const typeFilter = document.getElementById('filterType');
+    const locationFilter = document.getElementById('filterLocation');
+    const timeFilter = document.getElementById('filterTime');
+
+    // Format dates in client's local timezone
+    function formatEventDate(dateTimeString) {
+      if (!dateTimeString) return null;
+      const date = new Date(dateTimeString);
+      return {
+        date: date,
+        dateString: date.toISOString().split('T')[0],
+        time: date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true }),
+        dayOfWeek: date.toLocaleDateString('en-US', { weekday: 'long' }),
+        month: date.toLocaleDateString('en-US', { month: 'long' }),
+        day: date.getDate(),
+        year: date.getFullYear(),
+        hour: date.getHours(),
+      };
+    }
+
+    // Process events with local timezone formatting
+    const processedEvents = rawEvents.map(event => {
+      const dateInfo = formatEventDate(event.dateTime);
+      return {
+        ...event,
+        dateInfo: dateInfo,
+        dateKey: dateInfo ? dateInfo.dateString : 'No Date',
+        formattedTime: dateInfo ? dateInfo.time : 'Time TBD',
+        formattedDate: dateInfo 
+          ? `${dateInfo.dayOfWeek}, ${dateInfo.month} ${dateInfo.day}, ${dateInfo.year}`
+          : 'Date TBD',
+      };
+    }).sort((a, b) => {
+      if (!a.dateInfo) return 1;
+      if (!b.dateInfo) return -1;
+      return a.dateInfo.date - b.dateInfo.date;
+    });
+
+    // Populate filter dropdowns
+    const uniqueTypes = [...new Set(processedEvents.map(e => e.type))].sort();
+    const uniqueLocations = [...new Set(processedEvents
+      .filter(e => e.location && e.location !== 'TBD')
+      .map(e => e.location))].sort();
+
+    uniqueTypes.forEach(type => {
+      const option = document.createElement('option');
+      option.value = type;
+      option.textContent = type;
+      typeFilter.appendChild(option);
+    });
+
+    uniqueLocations.forEach(location => {
+      const option = document.createElement('option');
+      option.value = location;
+      option.textContent = location;
+      locationFilter.appendChild(option);
+    });
+
+    // Group events by date (in local timezone)
+    function groupEventsByDate(events) {
+      const grouped = {};
+      events.forEach(event => {
+        const dateKey = event.dateKey || 'No Date';
+        if (!grouped[dateKey]) {
+          grouped[dateKey] = [];
+        }
+        grouped[dateKey].push(event);
+      });
+
+      // Sort events within each day by time
+      Object.keys(grouped).forEach(dateKey => {
+        grouped[dateKey].sort((a, b) => {
+          if (!a.dateInfo) return 1;
+          if (!b.dateInfo) return -1;
+          return a.dateInfo.date - b.dateInfo.date;
+        });
+      });
+
+      return grouped;
+    }
+
+    // Render events
+    function renderEvents(eventsToRender) {
+      if (eventsToRender.length === 0) {
+        eventsContainer.innerHTML = '';
+        noResults.style.display = 'block';
+        return;
+      }
+
+      noResults.style.display = 'none';
+      const grouped = groupEventsByDate(eventsToRender);
+      const sortedDates = Object.keys(grouped).sort((a, b) => {
+        if (a === 'No Date') return 1;
+        if (b === 'No Date') return -1;
+        return new Date(a) - new Date(b);
+      });
+
+      let html = '';
+      sortedDates.forEach(dateKey => {
+        const dayEvents = grouped[dateKey];
+        const firstEvent = dayEvents[0];
+
+        html += `
+          <div class="schedule-day" 
+               data-date="${dateKey.toLowerCase()}"
+               data-date-key="${dateKey}">
+            <div class="day-header">
+              <div>
+                ${dateKey !== 'No Date' 
+                  ? `<div class="day-date">${firstEvent.formattedDate}</div>
+                     <div class="day-label">${dayEvents.length} ${dayEvents.length === 1 ? 'Event' : 'Events'}</div>`
+                  : '<div class="day-date">Date TBD</div>'}
+              </div>
+            </div>
+        `;
+
+        dayEvents.forEach(event => {
+          const name = (event.name || '').toLowerCase();
+          const type = (event.type || '').toLowerCase();
+          const location = (event.location || '').toLowerCase();
+          const date = (event.dateKey || '').toLowerCase();
+          const time = (event.formattedTime || '').toLowerCase();
+          const hour = event.dateInfo ? event.dateInfo.hour : '';
+          const description = (event.description || '').toLowerCase();
+
+          html += `
+            <div class="event-item event-card"
+                 data-name="${name}"
+                 data-type="${type}"
+                 data-location="${location}"
+                 data-date="${date}"
+                 data-time="${time}"
+                 data-time-raw="${hour}"
+                 data-description="${description}">
+              <div class="event-time">${event.formattedTime}</div>
+              <h3 class="event-title">${escapeHtml(event.name)}</h3>
+              <div class="event-meta">
+                <span class="event-meta-item">
+                  <strong>Type:</strong> ${escapeHtml(event.type)}
+                </span>
+                <span class="event-meta-item">
+                  <strong>Location:</strong> ${escapeHtml(event.location)}
+                </span>
+              </div>
+              ${event.description ? `<p class="event-description">${escapeHtml(event.description)}</p>` : ''}
+            </div>
+          `;
+        });
+
+        html += '</div>';
+      });
+
+      eventsContainer.innerHTML = html;
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    function getTimeOfDay(hour) {
+      if (hour === '' || hour === null || hour === undefined) return '';
+      const h = parseInt(hour);
+      if (h >= 6 && h < 12) return 'morning';
+      if (h >= 12 && h < 17) return 'afternoon';
+      if (h >= 17 && h < 21) return 'evening';
+      if (h >= 21 || h < 6) return 'night';
+      return '';
+    }
+
+    // Filter events
+    function filterEvents() {
+      const searchTerm = (searchInput?.value || '').toLowerCase();
+      const typeValue = (typeFilter?.value || '').toLowerCase();
+      const locationValue = (locationFilter?.value || '').toLowerCase();
+      const timeValue = (timeFilter?.value || '').toLowerCase();
+
+      const filtered = processedEvents.filter(event => {
+        const name = (event.name || '').toLowerCase();
+        const type = (event.type || '').toLowerCase();
+        const location = (event.location || '').toLowerCase();
+        const date = (event.dateKey || '').toLowerCase();
+        const time = (event.formattedTime || '').toLowerCase();
+        const description = (event.description || '').toLowerCase();
+        const hour = event.dateInfo ? event.dateInfo.hour : '';
+
+        const matchesSearch = !searchTerm || 
+          name.includes(searchTerm) || 
+          type.includes(searchTerm) || 
+          location.includes(searchTerm) || 
+          date.includes(searchTerm) || 
+          time.includes(searchTerm) ||
+          description.includes(searchTerm);
+
+        const matchesType = !typeValue || type === typeValue.toLowerCase();
+        const matchesLocation = !locationValue || location === locationValue.toLowerCase();
+        const matchesTime = !timeValue || getTimeOfDay(hour) === timeValue;
+
+        return matchesSearch && matchesType && matchesLocation && matchesTime;
+      });
+
+      renderEvents(filtered);
+    }
+
+    // Initial render
+    renderEvents(processedEvents);
+
+    // Add event listeners
+    if (searchInput) searchInput.addEventListener('input', filterEvents);
+    if (typeFilter) typeFilter.addEventListener('change', filterEvents);
+    if (locationFilter) locationFilter.addEventListener('change', filterEvents);
+    if (timeFilter) timeFilter.addEventListener('change', filterEvents);
+  })();
+</script>
 
 <%- include('../partials/footer') %>

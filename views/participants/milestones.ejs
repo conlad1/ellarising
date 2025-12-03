@@ -11,7 +11,7 @@
   </ul>
 <% } %>
 
-<% if (currentUser && currentUser.role === 'manager') { %>
+<% if (currentUser && currentUser.role === 'admin') { %>
   <a href="/participants/<%= participant.id %>/milestones/assign" class="btn btn-small btn-primary">
     Assign Milestone
   </a>

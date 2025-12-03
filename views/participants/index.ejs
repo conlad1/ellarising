@@ -1,4 +1,4 @@
-<%- include('../partials/header', { title: 'Participants – Ella Rises Admin', currentUser }) %>
+<%- include('../partials/header', { title: 'Participants – Ella Rises Admin', currentUser, currentPath: '/participants' }) %>
 
 <section class="section">
   <div class="section-header header-with-actions">
@@ -9,28 +9,43 @@
       </p>
     </div>
 
-    <% if (currentUser && currentUser.role === 'manager') { %>
+    <% if (currentUser && currentUser.role === 'admin') { %>
       <a href="/participants/new" class="btn btn-primary">Add Participant</a>
     <% } %>
   </div>
 
-  <form method="GET" class="filters filters-inline">
+  <form class="filters filters-inline" id="participantsFilter">
     <div class="form-group">
       <label for="q">Search</label>
       <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by name, email, or city">
     </div>
-    <button class="btn btn-outline">Filter</button>
+    <div class="form-group">
+      <label for="filterCity">City</label>
+      <select id="filterCity" name="city">
+        <option value="">All Cities</option>
+        <% if (participants && participants.length > 0) { %>
+          <% const uniqueCities = [...new Set(participants.filter(p => p.city).map(p => p.city))].sort(); %>
+          <% uniqueCities.forEach(city => { %>
+            <option value="<%= city %>"><%= city %></option>
+          <% }) %>
+        <% } %>
+      </select>
+    </div>
   </form>
+
+  <div id="noResults" style="display: none;">
+    <p>No participants match your filters.</p>
+  </div>
 
   <% if (!participants || participants.length === 0) { %>
     <p>No participants found yet.</p>
   <% } else { %>
-    <table class="table">
+    <div class="table-container">
+      <table class="table" id="participantsTable">
       <thead>
         <tr>
           <th>Name</th>
           <th>City</th>
-          <th>Grade</th>
           <th>Email</th>
           <th>Events Attended</th>
           <th class="table-actions">Actions</th>
@@ -38,27 +53,78 @@
       </thead>
       <tbody>
         <% participants.forEach(p => { %>
-          <tr>
+          <tr class="participant-row"
+              data-name="<%= (p.name || '').toLowerCase() %>"
+              data-city="<%= (p.city || '').toLowerCase() %>"
+              data-email="<%= (p.email || '').toLowerCase() %>"
+              data-events-count="<%= (p.events_count || 0).toString() %>">
             <td><%= p.name %></td>
             <td><%= p.city || '-' %></td>
-            <td><%= p.grade || '-' %></td>
             <td><%= p.email || '-' %></td>
             <td><%= p.events_count || 0 %></td>
             <td class="table-actions">
-              <a href="/participants/<%= p.id %>" class="link-small">View</a>
-              <% if (currentUser && currentUser.role === 'manager') { %>
-                | <a href="/participants/<%= p.id %>/edit" class="link-small">Edit</a>
-                |
-                <form action="/participants/<%= p.id %>/delete" method="POST" class="inline-form">
-                  <button class="link-small link-danger" onclick="return confirm('Delete this participant?');">Delete</button>
-                </form>
-              <% } %>
+              <a href="/participants/<%= p.id %>" class="link-small">View/edit record details</a>
             </td>
           </tr>
         <% }) %>
       </tbody>
     </table>
+    </div>
   <% } %>
+
+<script>
+  (function() {
+    const searchInput = document.getElementById('q');
+    const cityFilter = document.getElementById('filterCity');
+    const participantRows = document.querySelectorAll('.participant-row');
+    const noResults = document.getElementById('noResults');
+    const participantsTable = document.getElementById('participantsTable');
+
+    function filterParticipants() {
+      const searchTerm = (searchInput?.value || '').toLowerCase();
+      const cityValue = (cityFilter?.value || '').toLowerCase();
+      let visibleCount = 0;
+
+      participantRows.forEach(row => {
+        const name = row.dataset.name || '';
+        const city = row.dataset.city || '';
+        const email = row.dataset.email || '';
+        const eventsCount = row.dataset.eventsCount || '0';
+
+        const matchesSearch = !searchTerm || 
+          name.includes(searchTerm) || 
+          city.includes(searchTerm) || 
+          email.includes(searchTerm) || 
+          eventsCount.includes(searchTerm);
+
+        const matchesCity = !cityValue || city === cityValue.toLowerCase();
+
+        if (matchesSearch && matchesCity) {
+          row.style.display = '';
+          visibleCount++;
+        } else {
+          row.style.display = 'none';
+        }
+      });
+
+      if (visibleCount === 0 && participantRows.length > 0) {
+        noResults.style.display = 'block';
+        if (participantsTable) participantsTable.style.display = 'none';
+      } else {
+        noResults.style.display = 'none';
+        if (participantsTable) participantsTable.style.display = '';
+      }
+    }
+
+    if (searchInput) searchInput.addEventListener('input', filterParticipants);
+    if (cityFilter) cityFilter.addEventListener('change', filterParticipants);
+    
+    // Filter on page load if there's a search term
+    if (searchInput && searchInput.value) {
+      filterParticipants();
+    }
+  })();
+</script>
 </section>
 
 <%- include('../partials/footer') %>

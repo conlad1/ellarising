@@ -11,7 +11,7 @@
 </head>
 <body>
   <header>
-    <%- include('navbar', { currentUser }) %>
+    <%- include('navbar', { currentUser, currentPath: typeof currentPath !== 'undefined' ? currentPath : '' }) %>
   </header>
 
   <main class="page-container">
