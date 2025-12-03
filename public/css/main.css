@@ -828,3 +828,33 @@ textarea {
   object-fit: cover;
   display: block;
 }
+
+/* Rounded gradient section (WELCOME BACK + Hero sections) */
+.rounded-section {
+    background: linear-gradient(90deg, #FFE6E6, #FFF9F6);
+    padding: 40px 50px;
+    border-radius: 18px; /* <-- Rounds the corners */
+    margin: 20px auto;
+}
+
+/* Heading styling */
+.rounded-section h1,
+.rounded-section h2 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 42px;
+    color: #333;
+    margin-bottom: 15px;
+}
+
+/* Paragraph styling */
+.rounded-section p {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 18px;
+    color: #444;
+}
+
+/* Buttons inside these sections */
+.rounded-section .btn {
+    border-radius: 30px;
+    padding: 12px 28px;
+}

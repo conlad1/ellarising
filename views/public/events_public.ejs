@@ -151,6 +151,32 @@
       margin-top: 0.5rem;
     }
   }
+
+    /* Scrollable container like Participants */
+  .events-scroll-wrapper {
+    max-height: 70vh;
+    overflow-y: auto;
+    margin-top: 1.5rem;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    background: #fafafa;
+
+    /* 👇 add this so the top of the first event isn't cut off */
+    padding: 1rem 10px 10px 10px;
+  }
+
+  /* Scrollbar styling (keep as-is if you already added it) */
+  .events-scroll-wrapper::-webkit-scrollbar {
+    width: 8px;
+  }
+  .events-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: #e0a4bd;
+    border-radius: 4px;
+  }
+  .events-scroll-wrapper::-webkit-scrollbar-track {
+    background: #f7f7f7;
+  }
+
 </style>
 
 <section class="section">
@@ -204,8 +230,9 @@
       <p>No events match your filters.</p>
     </div>
 
-    <div class="events-schedule" id="eventsContainer"></div>
-
+    <div class="events-scroll-wrapper">
+      <div class="events-schedule" id="eventsContainer"></div>
+    </div>
   <% } %>
 </section>
 
