@@ -16,7 +16,6 @@ const path = require('path');
 const session = require('express-session');
 const knex = require('knex');
 const bcrypt = require('bcrypt');
-const helmet = require('helmet');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -71,9 +70,6 @@ db.raw('SELECT 1')
  */
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
-
-// Security middleware - sets various HTTP headers to help protect the app
-app.use(helmet());
 
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(express.urlencoded({ extended: true }));
