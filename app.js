@@ -879,6 +879,7 @@ app.post('/participants', requireManager, async (req, res) => {
       zip,
       school,
       field_of_interest,
+      dob,
     } = req.body;
 
     // Validate email uniqueness if provided
@@ -916,6 +917,7 @@ app.post('/participants', requireManager, async (req, res) => {
       participant_zip: zip ? zip.trim() : null,
       participant_school_or_employer: school ? school.trim() : null,
       participant_field_of_interest: field_of_interest ? field_of_interest.trim() : null,
+      participant_dob: dob || null,
       participant_role: 'participant',
     });
 
@@ -960,6 +962,7 @@ app.get('/participants/:id', requireLogin, async (req, res) => {
       zip: participant.participant_zip,
       school: participant.participant_school_or_employer,
       field_of_interest: participant.participant_field_of_interest,
+      dob: participant.participant_dob ? formatDateShort(participant.participant_dob) : null,
       donations_count: parseInt(donationCount?.count) || 0,
       milestones: milestonesForParticipant.map((pm) => ({
         id: pm.milestone_id,
@@ -998,6 +1001,7 @@ app.get('/participants/:id/edit', requireManager, async (req, res) => {
       zip: participant.participant_zip,
       school: participant.participant_school_or_employer,
       field_of_interest: participant.participant_field_of_interest,
+      dob: participant.participant_dob ? new Date(participant.participant_dob).toISOString().slice(0, 10) : '',
     };
 
     res.render('participants/form', {
@@ -1030,6 +1034,7 @@ app.post('/participants/:id', requireManager, async (req, res) => {
       zip,
       school,
       field_of_interest,
+      dob,
     } = req.body;
 
     // Validate email uniqueness if provided and changed
@@ -1069,6 +1074,7 @@ app.post('/participants/:id', requireManager, async (req, res) => {
       participant_zip: zip ? zip.trim() : null,
       participant_school_or_employer: school ? school.trim() : null,
       participant_field_of_interest: field_of_interest ? field_of_interest.trim() : null,
+      participant_dob: dob || null,
     });
 
     req.session.success = 'Participant updated.';
