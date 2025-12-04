@@ -15,21 +15,44 @@
     <% } %>
   </div>
 
-  <form class="filters filters-inline" id="eventsFilter">
+  <!-- Pass events to JS as JSON -->
+  <script id="eventsData" type="application/json">
+    <%- JSON.stringify(events || []) %>
+  </script>
+
+  <form class="filters filters-grid" id="eventsFilter">
     <div class="form-group">
       <label for="q">Search</label>
-      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by name, type, location, or date">
+      <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search events...">
     </div>
     <div class="form-group">
-      <label for="filterType">Type</label>
-      <select id="filterType" name="type">
+      <label for="filterTimeframe">Timeframe</label>
+      <select id="filterTimeframe">
+        <option value="all">All Events</option>
+        <option value="future">Future Events</option>
+        <option value="past">Past Events</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="filterType">Event Type</label>
+      <select id="filterType">
         <option value="">All Types</option>
-        <% if (events && events.length > 0) { %>
-          <% const uniqueTypes = [...new Set(events.map(e => e.type))]; %>
-          <% uniqueTypes.forEach(type => { %>
-            <option value="<%= type %>"><%= type %></option>
-          <% }) %>
-        <% } %>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="filterLocation">Location</label>
+      <select id="filterLocation">
+        <option value="">All Locations</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label for="filterTime">Time of Day</label>
+      <select id="filterTime">
+        <option value="">All Times</option>
+        <option value="morning">Morning (6am–12pm)</option>
+        <option value="afternoon">Afternoon (12pm–5pm)</option>
+        <option value="evening">Evening (5pm–9pm)</option>
+        <option value="night">Night (9pm–12am)</option>
       </select>
     </div>
   </form>
@@ -53,14 +76,15 @@
           <th class="table-actions">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody id="eventsTableBody">
         <% events.forEach(e => { %>
           <tr class="event-row"
               data-name="<%= (e.name || '').toLowerCase() %>"
               data-type="<%= (e.type || '').toLowerCase() %>"
               data-date="<%= (e.dateFormatted || '').toLowerCase() %>"
               data-location="<%= (e.location || '').toLowerCase() %>"
-              data-capacity="<%= (e.capacity || '').toString().toLowerCase() %>">
+              data-capacity="<%= (e.capacity || '').toString().toLowerCase() %>"
+              data-datetime="<%= e.dateTime || '' %>">
             <td><%= e.name %></td>
             <td><%= e.type %></td>
             <td><%= e.dateFormatted %></td>
@@ -78,57 +102,162 @@
 
 <script>
   (function() {
+    const dataTag = document.getElementById('eventsData');
+    if (!dataTag) return;
+
+    const rawEvents = JSON.parse(dataTag.textContent || '[]');
     const searchInput = document.getElementById('q');
+    const timeframeFilter = document.getElementById('filterTimeframe');
     const typeFilter = document.getElementById('filterType');
-    const eventRows = document.querySelectorAll('.event-row');
+    const locationFilter = document.getElementById('filterLocation');
+    const timeFilter = document.getElementById('filterTime');
+    const eventsTableBody = document.getElementById('eventsTableBody');
     const noResults = document.getElementById('noResults');
     const eventsTable = document.getElementById('eventsTable');
 
-    function filterEvents() {
-      const searchTerm = (searchInput?.value || '').toLowerCase();
-      const typeValue = (typeFilter?.value || '').toLowerCase();
-      let visibleCount = 0;
+    function formatDateInfo(dt) {
+      if (!dt) return null;
+      const d = new Date(dt);
+      return {
+        raw: d,
+        hour: d.getHours()
+      };
+    }
 
-      eventRows.forEach(row => {
-        const name = row.dataset.name || '';
-        const type = row.dataset.type || '';
-        const date = row.dataset.date || '';
-        const location = row.dataset.location || '';
-        const capacity = row.dataset.capacity || '';
+    const events = rawEvents.map(ev => {
+      const di = formatDateInfo(ev.dateTime);
+      const now = new Date();
+      const isFuture = di && di.raw > now;
+      return {
+        ...ev,
+        dateInfo: di,
+        isFuture: isFuture
+      };
+    });
 
-        const matchesSearch = !searchTerm || 
-          name.includes(searchTerm) || 
-          type.includes(searchTerm) || 
-          date.includes(searchTerm) || 
-          location.includes(searchTerm) || 
-          capacity.includes(searchTerm);
+    // Populate filter dropdowns
+    const types = [...new Set(events.map(e => e.type).filter(Boolean))].sort();
+    const locations = [...new Set(events.map(e => e.location).filter(Boolean))].sort();
 
-        const matchesType = !typeValue || type === typeValue.toLowerCase();
+    types.forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t;
+      opt.textContent = t;
+      typeFilter.appendChild(opt);
+    });
 
-        if (matchesSearch && matchesType) {
-          row.style.display = '';
-          visibleCount++;
-        } else {
-          row.style.display = 'none';
-        }
+    locations.forEach(l => {
+      const opt = document.createElement('option');
+      opt.value = l;
+      opt.textContent = l;
+      locationFilter.appendChild(opt);
+    });
+
+    function timeOfDay(hour) {
+      if (hour == null) return '';
+      if (hour >= 6 && hour < 12) return 'morning';
+      if (hour >= 12 && hour < 17) return 'afternoon';
+      if (hour >= 17 && hour < 21) return 'evening';
+      return 'night';
+    }
+
+    function escapeHtml(str) {
+      const div = document.createElement('div');
+      div.textContent = str || '';
+      return div.innerHTML;
+    }
+
+    function render(filteredEvents) {
+      if (!filteredEvents || filteredEvents.length === 0) {
+        if (eventsTable) eventsTable.style.display = 'none';
+        if (noResults) noResults.style.display = 'block';
+        return;
+      }
+
+      if (noResults) noResults.style.display = 'none';
+      if (eventsTable) eventsTable.style.display = '';
+
+      let html = '';
+      filteredEvents.forEach(e => {
+        html += `
+          <tr class="event-row">
+            <td>${escapeHtml(e.name)}</td>
+            <td>${escapeHtml(e.type)}</td>
+            <td>${escapeHtml(e.dateFormatted)}</td>
+            <td>${escapeHtml(e.location)}</td>
+            <td>${e.capacity || '-'}</td>
+            <td class="table-actions">
+              <a href="/events/${e.id}" class="link-small">View/edit record details</a>
+            </td>
+          </tr>
+        `;
       });
 
-      if (visibleCount === 0 && eventRows.length > 0) {
-        noResults.style.display = 'block';
-        if (eventsTable) eventsTable.style.display = 'none';
-      } else {
-        noResults.style.display = 'none';
-        if (eventsTable) eventsTable.style.display = '';
+      if (eventsTableBody) {
+        eventsTableBody.innerHTML = html;
       }
     }
 
-    if (searchInput) searchInput.addEventListener('input', filterEvents);
-    if (typeFilter) typeFilter.addEventListener('change', filterEvents);
-    
-    // Filter on page load if there's a search term
-    if (searchInput && searchInput.value) {
-      filterEvents();
+    function applyFilters() {
+      const q = (searchInput?.value || '').toLowerCase();
+      const timeframeVal = timeframeFilter?.value || 'all';
+      const typeVal = (typeFilter?.value || '').toLowerCase();
+      const locVal = (locationFilter?.value || '').toLowerCase();
+      const timeVal = (timeFilter?.value || '').toLowerCase();
+
+      const filtered = events.filter(ev => {
+        const name = (ev.name || '').toLowerCase();
+        const type = (ev.type || '').toLowerCase();
+        const loc = (ev.location || '').toLowerCase();
+        const date = (ev.dateFormatted || '').toLowerCase();
+        const capacity = (ev.capacity || '').toString().toLowerCase();
+        const tod = ev.dateInfo ? timeOfDay(ev.dateInfo.hour) : '';
+
+        const matchesSearch =
+          !q ||
+          name.includes(q) ||
+          type.includes(q) ||
+          loc.includes(q) ||
+          date.includes(q) ||
+          capacity.includes(q);
+
+        const matchesTimeframe = 
+          timeframeVal === 'all' ||
+          (timeframeVal === 'future' && ev.isFuture) ||
+          (timeframeVal === 'past' && !ev.isFuture);
+
+        const matchesType = !typeVal || type === typeVal;
+        const matchesLoc = !locVal || loc === locVal;
+        const matchesTime = !timeVal || tod === timeVal;
+
+        return matchesSearch && matchesTimeframe && matchesType && matchesLoc && matchesTime;
+      });
+
+      // Sort: future ascending, past descending, all descending
+      const sortAscending = timeframeVal === 'future';
+      filtered.sort((a, b) => {
+        if (!a.dateInfo) return 1;
+        if (!b.dateInfo) return -1;
+        
+        if (sortAscending) {
+          return a.dateInfo.raw - b.dateInfo.raw;
+        } else {
+          return b.dateInfo.raw - a.dateInfo.raw;
+        }
+      });
+
+      render(filtered);
     }
+
+    // Initial render
+    applyFilters();
+
+    // Event listeners
+    if (searchInput) searchInput.addEventListener('input', applyFilters);
+    if (timeframeFilter) timeframeFilter.addEventListener('change', applyFilters);
+    if (typeFilter) typeFilter.addEventListener('change', applyFilters);
+    if (locationFilter) locationFilter.addEventListener('change', applyFilters);
+    if (timeFilter) timeFilter.addEventListener('change', applyFilters);
   })();
 </script>
 </section>

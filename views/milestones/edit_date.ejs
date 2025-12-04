@@ -1,0 +1,32 @@
+<%- include('../partials/header', { title: 'Edit Milestone Date', currentUser, currentPath: '/participants' }) %>
+
+<section class="section">
+  <div class="section-header">
+    <h1 class="section-title">Edit Milestone Date</h1>
+    <p class="section-subtitle">
+      Update the achievement date for <strong><%= milestone.title %></strong> for <strong><%= participant.first_name %> <%= participant.last_name %></strong>.
+    </p>
+  </div>
+
+  <div class="card card-narrow">
+    <form action="/participants/<%= participant.id %>/milestones/<%= milestone.id %>" method="POST" class="form">
+      <% if (typeof csrfToken !== 'undefined') { %>
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <% } %>
+
+      <div class="form-group">
+        <label for="achieved_date">Achieved Date</label>
+        <input id="achieved_date" name="achieved_date" type="date" value="<%= milestone.date %>">
+        <small class="form-hint">Leave blank to mark as not yet achieved</small>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Update Date</button>
+        <a href="/participants/<%= participant.id %>" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+

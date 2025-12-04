@@ -1,17 +1,243 @@
 <%- include('../partials/header', { title: 'Donate – Ella Rises', currentUser, currentPath: '/donate' }) %>
 
+<style>
+  .donate-hero {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+
+  .donate-hero h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+  }
+
+  .donate-hero p {
+    font-size: 1.1rem;
+    color: #666;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .efficiency-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 3rem;
+  }
+
+  .metric-card {
+    background: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+  }
+
+  .metric-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f06292;
+    margin-bottom: 0.5rem;
+  }
+
+  .metric-label {
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .analytics-section {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 2rem;
+    margin-bottom: 3rem;
+  }
+
+  @media (max-width: 968px) {
+    .analytics-section {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .chart-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .chart-container h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .calculator-container {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .calculator-container h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .calculator-input {
+    margin-bottom: 1.5rem;
+  }
+
+  .calculator-input label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #333;
+  }
+
+  .calculator-input input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 8px;
+    font-size: 1.1rem;
+  }
+
+  .calculator-result {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+  }
+
+  .calculator-result-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #f06292;
+    margin-bottom: 0.5rem;
+  }
+
+  .calculator-result-label {
+    font-size: 0.9rem;
+    color: #666;
+  }
+
+  .donation-form-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    max-width: 600px;
+    margin: 0 auto 3rem auto;
+  }
+
+  .donation-form-section h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .milestones-list-section {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .milestones-list-section h3 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    color: #333;
+  }
+
+  .milestones-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+  }
+
+  .milestone-item {
+    padding: 1rem;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 3px solid #f06292;
+  }
+
+  .milestone-item-title {
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 0.25rem;
+  }
+
+  .milestone-item-description {
+    font-size: 0.9rem;
+    color: #666;
+  }
+</style>
+
 <section class="section">
-  <div class="section-header">
-    <h1 class="section-title">Support Ella Rises</h1>
-    <p class="section-subtitle">
+  <div class="donate-hero">
+    <h1>Support Ella Rises</h1>
+    <p>
       Your generosity helps us expand workshops, provide materials, and support long-term mentoring.
+      See how your donations make a real impact.
     </p>
   </div>
 
-  <div class="card card-narrow">
-    <p>
-      This page mirrors the external donation experience for the purposes of this class project.
-      In production, this would connect to Ella Rises' real donation platform.
+  <!-- Financial Efficiency Metrics -->
+  <div class="efficiency-metrics">
+    <div class="metric-card">
+      <div class="metric-value">$<%= totalDonations.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
+      <div class="metric-label">Total Donations</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value"><%= totalMilestones.toLocaleString() %></div>
+      <div class="metric-label">Milestones Achieved</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value">$<%= costPerMilestone.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %></div>
+      <div class="metric-label">Cost Per Milestone</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-value"><%= totalDonationCount.toLocaleString() %></div>
+      <div class="metric-label">Donors</div>
+    </div>
+  </div>
+
+  <!-- Analytics Section: Chart and Calculator -->
+  <div class="analytics-section">
+    <div class="chart-container">
+      <h3>Donation & Milestone Correlation</h3>
+      <p style="color: #666; font-size: 0.9rem; margin-bottom: 1rem;">
+        Each point represents a milestone achievement, showing the total donations received at the time that milestone was achieved.
+      </p>
+      <canvas id="donationMilestoneChart"></canvas>
+    </div>
+
+    <div class="calculator-container">
+      <h3>Donation Impact Calculator</h3>
+      <div class="calculator-input">
+        <label for="donationAmount">Donation Amount ($)</label>
+        <input type="number" id="donationAmount" min="0" step="5" placeholder="Enter amount" value="<%= Math.round(costPerMilestone) || 150 %>">
+      </div>
+      <div class="calculator-result">
+        <div class="calculator-result-value" id="estimatedMilestones">0</div>
+        <div class="calculator-result-label">Estimated Milestones Achieved</div>
+      </div>
+      <p style="font-size: 0.85rem; color: #666; margin-top: 1rem; text-align: center;">
+        Based on average cost of $<%= costPerMilestone.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) %> per milestone
+      </p>
+    </div>
+  </div>
+
+  <!-- Donation Form -->
+  <div class="donation-form-section">
+    <h2>Make a Donation</h2>
+    <p style="margin-bottom: 1.5rem; color: #666;">
+      Your contribution directly supports participant success and milestone achievement.
     </p>
 
     <form action="/donations/public" method="POST" class="form">
@@ -40,6 +266,156 @@
       <button class="btn btn-primary btn-full">Make a Gift</button>
     </form>
   </div>
+
+  <!-- Achieved Milestones List -->
+  <% if (milestones && milestones.length > 0) { %>
+    <div class="milestones-list-section">
+      <h3>Achieved Milestones</h3>
+      <p style="color: #666; margin-bottom: 1.5rem;">
+        These are the milestones that participants have achieved with the support of donations like yours.
+      </p>
+      <div class="milestones-grid">
+        <% milestones.forEach(m => { %>
+          <div class="milestone-item">
+            <div class="milestone-item-title"><%= m.title %></div>
+            <% if (m.description) { %>
+              <div class="milestone-item-description"><%= m.description %></div>
+            <% } %>
+          </div>
+        <% }) %>
+      </div>
+    </div>
+  <% } %>
 </section>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+  // Chart Data
+  const chartData = <%- chartData %>;
+  const costPerMilestone = parseFloat(<%= costPerMilestone %>) || 0;
+
+  // Prepare line chart data points
+  const lineData = chartData.map(d => ({
+    x: d.x,
+    y: d.y,
+    date: d.date
+  }));
+
+  // Create chart
+  const ctx = document.getElementById('donationMilestoneChart');
+  if (ctx && lineData.length > 0) {
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        datasets: [
+          {
+            label: 'Milestones vs Donations',
+            data: lineData,
+            backgroundColor: 'rgba(240, 98, 146, 0.1)',
+            borderColor: '#f06292',
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0.4,
+            fill: true,
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        aspectRatio: 2,
+        interaction: {
+          mode: 'point',
+          intersect: false,
+        },
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            callbacks: {
+              title: function(context) {
+                const point = context[0];
+                const date = point.raw.date;
+                if (date) {
+                  const dateObj = new Date(date);
+                  return dateObj.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                }
+                return 'Milestone Achievement';
+              },
+              label: function(context) {
+                return [
+                  'Total Donations: $' + context.parsed.x.toLocaleString(),
+                  'Milestones Achieved: ' + context.parsed.y
+                ];
+              }
+            }
+          }
+        },
+        scales: {
+          x: {
+            type: 'linear',
+            position: 'bottom',
+            title: {
+              display: true,
+              text: 'Total Donations at Time of Achievement ($)'
+            },
+            ticks: {
+              callback: function(value) {
+                return '$' + value.toLocaleString();
+              }
+            }
+          },
+          y: {
+            type: 'linear',
+            title: {
+              display: true,
+              text: 'Cumulative Milestones Achieved'
+            },
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Donation Calculator
+  const donationInput = document.getElementById('donationAmount');
+  const estimatedMilestones = document.getElementById('estimatedMilestones');
+
+  function calculateMilestones() {
+    const amount = parseFloat(donationInput.value) || 0;
+    const costPerMilestoneValue = parseFloat(costPerMilestone) || 0;
+    
+    if (costPerMilestoneValue > 0 && amount > 0) {
+      // Calculate milestones with a small epsilon to handle floating point precision
+      // Add 0.0001 to account for floating point rounding errors
+      const milestones = Math.floor((amount / costPerMilestoneValue) + 0.0001);
+      estimatedMilestones.textContent = milestones;
+    } else {
+      estimatedMilestones.textContent = '0';
+    }
+  }
+
+  // Link calculator to form amount field
+  const formAmountInput = document.getElementById('amount');
+  if (formAmountInput && donationInput) {
+    formAmountInput.addEventListener('input', function() {
+      donationInput.value = this.value;
+      calculateMilestones();
+    });
+
+    donationInput.addEventListener('input', function() {
+      formAmountInput.value = this.value;
+      calculateMilestones();
+    });
+  }
+
+  // Initial calculation
+  calculateMilestones();
+</script>
 
 <%- include('../partials/footer') %>
