@@ -1890,7 +1890,19 @@ app.get('/events/admin', requireLogin, async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
     let query = db('event_instance as ei')
-      .select('ei.event_instance_id', 'ei.event_date_start_time', 'e.event_name', 'e.event_type', 'ei.event_location', 'ei.event_capacity')
+      .select(
+        'ei.event_instance_id', 
+        'ei.event_date_start_time', 
+        'e.event_name', 
+        'e.event_type', 
+        'ei.event_location', 
+        'ei.event_capacity',
+        db.raw(`(
+          SELECT count(*)
+          FROM event_registration er
+          WHERE er.event_instance_id = ei.event_instance_id
+        ) as registrations_count`)
+      )
       .leftJoin('event as e', 'ei.event_id', 'e.event_id');
 
     if (q) {
@@ -1910,6 +1922,7 @@ app.get('/events/admin', requireLogin, async (req, res) => {
       dateFormatted: formatDateShort(e.event_date_start_time),
       dateTime: e.event_date_start_time, // Raw date-time for client-side filtering
       capacity: e.event_capacity || 0,
+      registrations: parseInt(e.registrations_count) || 0,
     }));
 
     res.render('events/instances/index', { events: viewModels, q });
@@ -2422,6 +2435,14 @@ app.post('/events/:id/delete', requireManager, async (req, res) => {
 app.get('/surveys', requireLogin, async (req, res) => {
   try {
     const q = (req.query.q || '').toLowerCase();
+    const eventFilter = req.query.event || '';
+    
+    // Get list of unique event names for the filter dropdown
+    const eventNames = await db('event')
+      .distinct('event_name')
+      .whereNotNull('event_name')
+      .orderBy('event_name', 'asc')
+      .pluck('event_name');
     
     let query = db('survey_submission as ss')
       .join('participant as p', 'ss.participant_id', 'p.participant_id')
@@ -2445,6 +2466,10 @@ app.get('/surveys', requireLogin, async (req, res) => {
         this.where(db.raw("CONCAT(p.participant_first_name, ' ', p.participant_last_name)"), 'ilike', `%${q}%`)
           .orWhere('e.event_name', 'ilike', `%${q}%`);
       });
+    }
+
+    if (eventFilter) {
+      query = query.where('e.event_name', eventFilter);
     }
 
     const surveysData = await query.orderBy('ss.survey_submission_date', 'desc');
@@ -2474,11 +2499,17 @@ app.get('/surveys', requireLogin, async (req, res) => {
       recommend: responseMap[s.id]?.[4] || '-',
     }));
     
-    res.render('surveys/index', { surveys, q });
+    res.render('surveys/index', { surveys, q, eventFilter, eventNames });
   } catch (err) {
     console.error('Error fetching surveys:', err);
     req.session.error = 'Error loading surveys.';
-    res.render('surveys/index', { surveys: [], q: req.query.q || '' });
+    const eventNames = await db('event')
+      .distinct('event_name')
+      .whereNotNull('event_name')
+      .orderBy('event_name', 'asc')
+      .pluck('event_name')
+      .catch(() => []);
+    res.render('surveys/index', { surveys: [], q: req.query.q || '', eventFilter: req.query.event || '', eventNames });
   }
 });
 

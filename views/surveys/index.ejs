@@ -14,12 +14,42 @@
     <% } %>
   </div>
 
-  <form method="GET" class="filters filters-inline">
+  <form method="GET" class="filters filters-inline" id="surveysFilterForm">
     <div class="form-group">
       <label for="q">Search</label>
       <input id="q" name="q" type="text" value="<%= q || '' %>" placeholder="Search by participant or event">
     </div>
+    <div class="form-group">
+      <label for="event">Event</label>
+      <select id="event" name="event">
+        <option value="">All Events</option>
+        <% if (eventNames && eventNames.length > 0) { %>
+          <% eventNames.forEach(eventName => { %>
+            <option value="<%= eventName %>" <%= (eventFilter === eventName) ? 'selected' : '' %>><%= eventName %></option>
+          <% }) %>
+        <% } %>
+      </select>
+    </div>
+    <% if (q || eventFilter) { %>
+      <div class="form-group">
+        <a href="/surveys" class="btn btn-text">Clear</a>
+      </div>
+    <% } %>
   </form>
+
+<script>
+  // Auto-submit form when event dropdown changes
+  document.addEventListener('DOMContentLoaded', function() {
+    const eventSelect = document.getElementById('event');
+    const filterForm = document.getElementById('surveysFilterForm');
+    
+    if (eventSelect && filterForm) {
+      eventSelect.addEventListener('change', function() {
+        filterForm.submit();
+      });
+    }
+  });
+</script>
 
   <% if (!surveys || surveys.length === 0) { %>
     <p>No surveys recorded yet.</p>
