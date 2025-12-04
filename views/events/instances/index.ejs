@@ -29,7 +29,7 @@
       <label for="filterTimeframe">Timeframe</label>
       <select id="filterTimeframe">
         <option value="all">All Events</option>
-        <option value="future">Future Events</option>
+        <option value="future" selected>Future Events</option>
         <option value="past">Past Events</option>
       </select>
     </div>
@@ -204,7 +204,7 @@
 
     function applyFilters() {
       const q = (searchInput?.value || '').toLowerCase();
-      const timeframeVal = timeframeFilter?.value || 'all';
+      const timeframeVal = timeframeFilter?.value || 'future';
       const typeVal = (typeFilter?.value || '').toLowerCase();
       const locVal = (locationFilter?.value || '').toLowerCase();
       const timeVal = (timeFilter?.value || '').toLowerCase();

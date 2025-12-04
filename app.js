@@ -337,12 +337,28 @@ app.get('/programs', (req, res) => {
 app.get('/events', async (req, res) => {
   try {
     const eventsData = await db
-      .select('ei.*', 'e.event_name', 'e.event_type', 'e.event_description', 'ei.event_location')
+      .select(
+        'ei.*', 
+        'e.event_name', 
+        'e.event_type', 
+        'e.event_description', 
+        'ei.event_location',
+        'ei.event_capacity',
+        db.raw(`(
+          SELECT count(*)
+          FROM event_registration er
+          WHERE er.event_instance_id = ei.event_instance_id
+        ) as registrations_count`)
+      )
       .from('event_instance as ei')
       .leftJoin('event as e', 'ei.event_id', 'e.event_id')
       .orderBy('ei.event_date_start_time', 'asc');
 
     const publicEvents = eventsData.map((e) => {
+      const capacity = e.event_capacity ? parseInt(e.event_capacity) : null;
+      const registrations = parseInt(e.registrations_count || 0);
+      const isFull = capacity !== null && registrations >= capacity;
+      
       return {
         id: e.event_instance_id,
         name: e.event_name || 'Event',
@@ -350,6 +366,9 @@ app.get('/events', async (req, res) => {
         location: e.event_location || 'TBD',
         dateTime: e.event_date_start_time, // Raw ISO date-time string from database
         description: e.event_description || '',
+        capacity: capacity,
+        registrations: registrations,
+        isFull: isFull,
       };
     });
 
@@ -388,6 +407,20 @@ app.get('/events/:id/register', async (req, res) => {
     if (eventDate <= new Date()) {
       req.session.error = 'Registration is only available for future events.';
       return res.redirect('/events');
+    }
+
+    // Check if event is at capacity
+    if (eventInstance.event_capacity) {
+      const registrationCount = await db('event_registration')
+        .where('event_instance_id', eventInstanceId)
+        .count('* as count')
+        .first();
+      
+      const currentRegistrations = parseInt(registrationCount?.count || 0);
+      if (currentRegistrations >= eventInstance.event_capacity) {
+        req.session.error = 'This event is at full capacity. Registration is no longer available.';
+        return res.redirect('/events');
+      }
     }
 
     if (registrationType === 'new') {
@@ -447,6 +480,20 @@ app.post('/events/:id/register/existing', async (req, res) => {
       return res.redirect('/events');
     }
 
+    // Check if event is at capacity
+    if (eventInstance.event_capacity) {
+      const registrationCount = await db('event_registration')
+        .where('event_instance_id', eventInstanceId)
+        .count('* as count')
+        .first();
+      
+      const currentRegistrations = parseInt(registrationCount?.count || 0);
+      if (currentRegistrations >= eventInstance.event_capacity) {
+        req.session.error = 'This event is at full capacity. Registration is no longer available.';
+        return res.redirect('/events');
+      }
+    }
+
     // Find participant by email
     const normalizedEmail = email.trim().toLowerCase();
     const participant = await db('participant')
@@ -469,6 +516,20 @@ app.post('/events/:id/register/existing', async (req, res) => {
     if (existingRegistration) {
       req.session.error = `${email.trim()} is already registered for this event.`;
       return res.redirect('/events');
+    }
+
+    // Final capacity check before creating registration (handles race conditions)
+    if (eventInstance.event_capacity) {
+      const registrationCount = await db('event_registration')
+        .where('event_instance_id', eventInstanceId)
+        .count('* as count')
+        .first();
+      
+      const currentRegistrations = parseInt(registrationCount?.count || 0);
+      if (currentRegistrations >= eventInstance.event_capacity) {
+        req.session.error = 'This event is at full capacity. Registration is no longer available.';
+        return res.redirect('/events');
+      }
     }
 
     // Create registration
@@ -528,6 +589,20 @@ app.post('/events/:id/register/new', async (req, res) => {
     if (eventDate <= new Date()) {
       req.session.error = 'Registration is only available for future events.';
       return res.redirect('/events');
+    }
+
+    // Check if event is at capacity
+    if (eventInstance.event_capacity) {
+      const registrationCount = await db('event_registration')
+        .where('event_instance_id', eventInstanceId)
+        .count('* as count')
+        .first();
+      
+      const currentRegistrations = parseInt(registrationCount?.count || 0);
+      if (currentRegistrations >= eventInstance.event_capacity) {
+        req.session.error = 'This event is at full capacity. Registration is no longer available.';
+        return res.redirect('/events');
+      }
     }
 
     // Check if email already exists - prevent duplicate emails
@@ -605,6 +680,20 @@ app.post('/events/:id/register/new', async (req, res) => {
       const displayEmail = email && email.trim() ? email.trim() : 'This participant';
       req.session.error = `${displayEmail} is already registered for this event.`;
       return res.redirect('/events');
+    }
+
+    // Final capacity check before creating registration (handles race conditions)
+    if (eventInstance.event_capacity) {
+      const registrationCount = await db('event_registration')
+        .where('event_instance_id', eventInstanceId)
+        .count('* as count')
+        .first();
+      
+      const currentRegistrations = parseInt(registrationCount?.count || 0);
+      if (currentRegistrations >= eventInstance.event_capacity) {
+        req.session.error = 'This event is at full capacity. Registration is no longer available.';
+        return res.redirect('/events');
+      }
     }
 
     // Create registration
@@ -2364,6 +2453,28 @@ app.post('/events/:id', requireManager, async (req, res) => {
     if (!event_id) {
       req.session.error = 'Please select an event.';
       return res.redirect(`/events/${req.params.id}/edit`);
+    }
+
+    // Check if new capacity is lower than current registrations
+    // Get current registration count first
+    const registrationCount = await db('event_registration')
+      .where('event_instance_id', req.params.id)
+      .count('* as count')
+      .first();
+    
+    const currentRegistrations = parseInt(registrationCount?.count || 0);
+    
+    // If capacity is being set (not null/empty), validate it
+    if (capacity !== null && capacity !== undefined && capacity !== '') {
+      const newCapacity = Number(capacity);
+      // Check if it's a valid number (including 0)
+      if (!isNaN(newCapacity)) {
+        // If capacity is being set to a number, it must be at least equal to current registrations
+        if (newCapacity < currentRegistrations) {
+          req.session.error = `Cannot set capacity to ${newCapacity}. There are currently ${currentRegistrations} registered participant${currentRegistrations !== 1 ? 's' : ''}. Capacity must be at least ${currentRegistrations}.`;
+          return res.redirect(`/events/${req.params.id}/edit`);
+        }
+      }
     }
 
     // Update event_instance table only (event definition is not changed)
