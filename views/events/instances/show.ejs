@@ -38,6 +38,46 @@
       <p><strong>Capacity:</strong> <%= event.capacity %></p>
     <% } %>
   </div>
+
+  <% if (currentUser && currentUser.role === 'admin') { %>
+    <div class="card" style="margin-top: 1.5rem;">
+      <h2>Registered Participants</h2>
+      <% if (!registrations || registrations.length === 0) { %>
+        <p>No participants have registered for this event yet.</p>
+      <% } else { %>
+        <div class="table-container">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Registration Status</th>
+                <th>Attended</th>
+                <th>Registration Created</th>
+                <th>Check In Time</th>
+                <th class="table-actions">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% registrations.forEach(reg => { %>
+                <tr>
+                  <td><%= reg.name %></td>
+                  <td><%= reg.email %></td>
+                  <td><%= reg.status %></td>
+                  <td><%= reg.attended %></td>
+                  <td><%= reg.created_at %></td>
+                  <td><%= reg.check_in_time %></td>
+                  <td class="table-actions">
+                    <a href="/participants/<%= reg.participant_id %>" class="link-small">View participant details</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      <% } %>
+    </div>
+  <% } %>
 </section>
 
 <%- include('../../partials/footer') %>

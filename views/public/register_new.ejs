@@ -1,0 +1,77 @@
+<%- include('../partials/header', { title: 'Register for Event', currentUser, currentPath: '/events' }) %>
+
+<section class="section">
+  <a href="/events" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Events</a>
+  <div class="section-header">
+    <h1 class="section-title">Register for <%= eventInstance.name %></h1>
+    <p class="section-subtitle">Create a new participant account and register for this event.</p>
+  </div>
+
+  <div class="card card-narrow">
+    <form action="/events/<%= eventInstance.id %>/register/new" method="POST" class="form">
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="first_name">First Name *</label>
+          <input id="first_name" name="first_name" type="text" required>
+        </div>
+
+        <div class="form-group">
+          <label for="last_name">Last Name *</label>
+          <input id="last_name" name="last_name" type="text" required>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="dob">Date of Birth</label>
+        <input id="dob" name="dob" type="date">
+      </div>
+
+      <div class="form-group">
+        <label for="school">School</label>
+        <input id="school" name="school" type="text">
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="city">City</label>
+          <input id="city" name="city" type="text">
+        </div>
+
+        <div class="form-group">
+          <label for="state">State</label>
+          <input id="state" name="state" type="text">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="zip">ZIP Code</label>
+        <input id="zip" name="zip" type="text">
+      </div>
+
+      <div class="form-group-inline">
+        <div class="form-group">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email">
+        </div>
+
+        <div class="form-group">
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="text">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="field_of_interest">Field of Interest</label>
+        <input id="field_of_interest" name="field_of_interest" type="text" placeholder="e.g., STEM, Arts, Business">
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Register</button>
+        <a href="/events" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+

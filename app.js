@@ -340,11 +340,11 @@ app.get('/events', async (req, res) => {
       .select('ei.*', 'e.event_name', 'e.event_type', 'e.event_description', 'ei.event_location')
       .from('event_instance as ei')
       .leftJoin('event as e', 'ei.event_id', 'e.event_id')
-      .where(db.raw("EXTRACT(YEAR FROM ei.event_date_start_time)"), ">=", new Date().getFullYear())
       .orderBy('ei.event_date_start_time', 'asc');
 
     const publicEvents = eventsData.map((e) => {
       return {
+        id: e.event_instance_id,
         name: e.event_name || 'Event',
         type: e.event_type || 'General',
         location: e.event_location || 'TBD',
@@ -361,14 +361,392 @@ app.get('/events', async (req, res) => {
 });
 
 /**
+ * Event Registration Routes - Public routes for event registration
+ */
+
+/**
+ * Registration Form - Show existing or new participant registration form
+ */
+app.get('/events/:id/register', async (req, res) => {
+  try {
+    const eventInstanceId = req.params.id;
+    const registrationType = req.query.type || 'existing'; // 'existing' or 'new'
+
+    const eventInstance = await db('event_instance as ei')
+      .join('event as e', 'ei.event_id', 'e.event_id')
+      .where('ei.event_instance_id', eventInstanceId)
+      .select('ei.*', 'e.event_name', 'e.event_type')
+      .first();
+
+    if (!eventInstance) {
+      req.session.error = 'Event not found.';
+      return res.redirect('/events');
+    }
+
+    // Check if event is in the future
+    const eventDate = new Date(eventInstance.event_date_start_time);
+    if (eventDate <= new Date()) {
+      req.session.error = 'Registration is only available for future events.';
+      return res.redirect('/events');
+    }
+
+    if (registrationType === 'new') {
+      res.render('public/register_new', {
+        eventInstance: {
+          id: eventInstance.event_instance_id,
+          name: eventInstance.event_name,
+          type: eventInstance.event_type,
+          date: eventInstance.event_date_start_time,
+          location: eventInstance.event_location,
+        },
+      });
+    } else {
+      res.render('public/register_existing', {
+        eventInstance: {
+          id: eventInstance.event_instance_id,
+          name: eventInstance.event_name,
+          type: eventInstance.event_type,
+          date: eventInstance.event_date_start_time,
+          location: eventInstance.event_location,
+        },
+      });
+    }
+  } catch (err) {
+    console.error('Error loading registration form:', err);
+    req.session.error = 'Error loading registration form.';
+    res.redirect('/events');
+  }
+});
+
+/**
+ * Register Existing Participant - Find participant by email and register
+ */
+app.post('/events/:id/register/existing', async (req, res) => {
+  try {
+    const eventInstanceId = req.params.id;
+    const { email } = req.body;
+
+    if (!email || !email.trim()) {
+      req.session.error = 'Email is required.';
+      return res.redirect(`/events/${eventInstanceId}/register?type=existing`);
+    }
+
+    // Check if event exists and is in the future
+    const eventInstance = await db('event_instance')
+      .where('event_instance_id', eventInstanceId)
+      .first();
+
+    if (!eventInstance) {
+      req.session.error = 'Event not found.';
+      return res.redirect('/events');
+    }
+
+    const eventDate = new Date(eventInstance.event_date_start_time);
+    if (eventDate <= new Date()) {
+      req.session.error = 'Registration is only available for future events.';
+      return res.redirect('/events');
+    }
+
+    // Find participant by email
+    const normalizedEmail = email.trim().toLowerCase();
+    const participant = await db('participant')
+      .where('participant_email', normalizedEmail)
+      .first();
+
+    if (!participant) {
+      req.session.error = 'No participant found with that email address. Please register as a new participant.';
+      return res.redirect(`/events/${eventInstanceId}/register?type=existing`);
+    }
+
+    // Check if already registered
+    const existingRegistration = await db('event_registration')
+      .where({
+        participant_id: participant.participant_id,
+        event_instance_id: eventInstanceId,
+      })
+      .first();
+
+    if (existingRegistration) {
+      req.session.error = `${email.trim()} is already registered for this event.`;
+      return res.redirect('/events');
+    }
+
+    // Create registration
+    await db('event_registration').insert({
+      participant_id: participant.participant_id,
+      event_instance_id: eventInstanceId,
+      registration_status: 'registered',
+      registration_attended_flag: false,
+      registration_created_at: new Date(),
+    });
+
+    req.session.success = 'Successfully registered for the event!';
+    res.redirect('/events');
+  } catch (err) {
+    console.error('Error registering participant:', err);
+    req.session.error = 'Error processing registration.';
+    res.redirect(`/events/${req.params.id}/register?type=existing`);
+  }
+});
+
+/**
+ * Register New Participant - Create participant and register for event
+ */
+app.post('/events/:id/register/new', async (req, res) => {
+  try {
+    const eventInstanceId = req.params.id;
+    const {
+      first_name,
+      last_name,
+      email,
+      phone,
+      city,
+      state,
+      zip,
+      school,
+      field_of_interest,
+      dob,
+    } = req.body;
+
+    // Validate required fields
+    if (!first_name || !first_name.trim() || !last_name || !last_name.trim()) {
+      req.session.error = 'First name and last name are required.';
+      return res.redirect(`/events/${eventInstanceId}/register?type=new`);
+    }
+
+    // Check if event exists and is in the future
+    const eventInstance = await db('event_instance')
+      .where('event_instance_id', eventInstanceId)
+      .first();
+
+    if (!eventInstance) {
+      req.session.error = 'Event not found.';
+      return res.redirect('/events');
+    }
+
+    const eventDate = new Date(eventInstance.event_date_start_time);
+    if (eventDate <= new Date()) {
+      req.session.error = 'Registration is only available for future events.';
+      return res.redirect('/events');
+    }
+
+    // Check if email already exists - prevent duplicate emails
+    if (email && email.trim()) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const existingParticipant = await db('participant')
+        .where('participant_email', normalizedEmail)
+        .first();
+
+      if (existingParticipant) {
+        // Email already exists - check if they're already registered
+        const existingRegistration = await db('event_registration')
+          .where({
+            participant_id: existingParticipant.participant_id,
+            event_instance_id: eventInstanceId,
+          })
+          .first();
+
+        if (existingRegistration) {
+          req.session.error = `${email.trim()} is already registered for this event.`;
+          return res.redirect('/events');
+        }
+
+        // Email exists but not registered - redirect to existing participant registration
+        req.session.error = 'An account with this email already exists. Please use the "Existing Participant" option to register.';
+        return res.redirect(`/events/${eventInstanceId}/register?type=existing`);
+      }
+    }
+
+    // Create new participant (email doesn't exist or no email provided)
+    let participant_id;
+    if (email && email.trim()) {
+      const normalizedEmail = email.trim().toLowerCase();
+      const [newParticipant] = await db('participant').insert({
+        participant_first_name: first_name.trim(),
+        participant_last_name: last_name.trim(),
+        participant_email: normalizedEmail,
+        participant_phone: phone ? phone.trim() : null,
+        participant_city: city ? city.trim() : null,
+        participant_state: state ? state.trim() : null,
+        participant_zip: zip ? zip.trim() : null,
+        participant_school_or_employer: school ? school.trim() : null,
+        participant_field_of_interest: field_of_interest ? field_of_interest.trim() : null,
+        participant_dob: dob || null,
+        participant_role: 'participant',
+      }).returning('participant_id');
+      participant_id = newParticipant.participant_id || newParticipant;
+    } else {
+      // Create participant without email
+      const [newParticipant] = await db('participant').insert({
+        participant_first_name: first_name.trim(),
+        participant_last_name: last_name.trim(),
+        participant_email: null,
+        participant_phone: phone ? phone.trim() : null,
+        participant_city: city ? city.trim() : null,
+        participant_state: state ? state.trim() : null,
+        participant_zip: zip ? zip.trim() : null,
+        participant_school_or_employer: school ? school.trim() : null,
+        participant_field_of_interest: field_of_interest ? field_of_interest.trim() : null,
+        participant_dob: dob || null,
+        participant_role: 'participant',
+      }).returning('participant_id');
+      participant_id = newParticipant.participant_id || newParticipant;
+    }
+
+    // Final check if already registered (safety check after participant creation)
+    const existingRegistration = await db('event_registration')
+      .where({
+        participant_id: participant_id,
+        event_instance_id: eventInstanceId,
+      })
+      .first();
+
+    if (existingRegistration) {
+      const displayEmail = email && email.trim() ? email.trim() : 'This participant';
+      req.session.error = `${displayEmail} is already registered for this event.`;
+      return res.redirect('/events');
+    }
+
+    // Create registration
+    await db('event_registration').insert({
+      participant_id: participant_id,
+      event_instance_id: eventInstanceId,
+      registration_status: 'registered',
+      registration_attended_flag: false,
+      registration_created_at: new Date(),
+    });
+
+    req.session.success = 'Successfully registered for the event!';
+    res.redirect('/events');
+  } catch (err) {
+    console.error('Error registering new participant:', err);
+    req.session.error = 'Error processing registration.';
+    res.redirect(`/events/${req.params.id}/register?type=new`);
+  }
+});
+
+/**
  * Donate Page - Public donation form
  * 
  * Per rubric requirement: "Link to donations page for any visitor"
  * Visitors can provide their information (name, email) and donation amount.
  * Form submits to /donations/public route which saves donor info and donation.
  */
-app.get('/donate', (req, res) => {
-  res.render('public/donate');
+app.get('/donate', async (req, res) => {
+  try {
+    // Fetch donation and milestone data for analytics
+    const [donationsData, milestonesData, achievedMilestones, donationsByMonth, milestonesByMonth] = await Promise.all([
+      db('donation')
+        .select(db.raw('sum(donation_amount) as total'), db.raw('count(*) as count'))
+        .first(),
+      db('participant_milestone')
+        .whereNotNull('milestone_date')
+        .count('* as count')
+        .first(),
+      db('milestone as m')
+        .join('participant_milestone as pm', 'm.milestone_id', 'pm.milestone_id')
+        .whereNotNull('pm.milestone_date')
+        .select('m.milestone_id', 'm.milestone_title', 'm.milestone_description')
+        .groupBy('m.milestone_id', 'm.milestone_title', 'm.milestone_description')
+        .orderBy('m.milestone_title'),
+      db('donation')
+        .select(
+          db.raw("TO_CHAR(donation_date, 'YYYY-MM') as month"),
+          db.raw('sum(donation_amount) as total'),
+          db.raw('count(*) as count')
+        )
+        .whereNotNull('donation_date')
+        .groupBy(db.raw("TO_CHAR(donation_date, 'YYYY-MM')"))
+        .orderBy(db.raw("TO_CHAR(donation_date, 'YYYY-MM')")),
+      db('participant_milestone')
+        .select(
+          db.raw("TO_CHAR(milestone_date, 'YYYY-MM') as month"),
+          db.raw('count(*) as count')
+        )
+        .whereNotNull('milestone_date')
+        .groupBy(db.raw("TO_CHAR(milestone_date, 'YYYY-MM')"))
+        .orderBy(db.raw("TO_CHAR(milestone_date, 'YYYY-MM')"))
+    ]);
+
+    const totalDonations = parseFloat(donationsData?.total || 0);
+    const totalDonationCount = parseInt(donationsData?.count || 0);
+    const totalMilestones = parseInt(milestonesData?.count || 0);
+    const costPerMilestone = totalMilestones > 0 ? totalDonations / totalMilestones : 0;
+
+    // Prepare correlation data: total donations at time of each milestone achievement
+    // Get all milestone achievements with their dates, ordered chronologically
+    const milestonesWithDates = await db('participant_milestone')
+      .whereNotNull('milestone_date')
+      .select('milestone_date')
+      .orderBy('milestone_date', 'asc');
+
+    // Get all donations with their dates for cumulative calculation
+    const allDonations = await db('donation')
+      .whereNotNull('donation_date')
+      .select('donation_date', 'donation_amount')
+      .orderBy('donation_date', 'asc');
+
+    // Calculate cumulative donations and milestones
+    const chartData = [];
+    let cumulativeDonations = 0;
+    let cumulativeMilestones = 0;
+    let donationIndex = 0;
+
+    // Process each milestone in chronological order
+    milestonesWithDates.forEach(milestone => {
+      const milestoneDate = milestone.milestone_date.toISOString().slice(0, 10);
+      
+      // Add all donations up to and including this milestone date
+      while (donationIndex < allDonations.length) {
+        const donation = allDonations[donationIndex];
+        const donationDate = donation.donation_date.toISOString().slice(0, 10);
+        
+        if (donationDate <= milestoneDate) {
+          cumulativeDonations += parseFloat(donation.donation_amount || 0);
+          donationIndex++;
+        } else {
+          break;
+        }
+      }
+
+      // Increment cumulative milestones
+      cumulativeMilestones += 1;
+
+      // Add data point: x = total donations at this point, y = total milestones achieved
+      chartData.push({
+        x: cumulativeDonations,
+        y: cumulativeMilestones,
+        date: milestoneDate
+      });
+    });
+
+    // Transform achieved milestones for view
+    const milestones = achievedMilestones.map(m => ({
+      id: m.milestone_id,
+      title: m.milestone_title,
+      description: m.milestone_description || '',
+    }));
+
+    res.render('public/donate', {
+      totalDonations,
+      totalDonationCount,
+      totalMilestones,
+      costPerMilestone,
+      milestones,
+      chartData: JSON.stringify(chartData),
+    });
+  } catch (err) {
+    console.error('Error fetching donation analytics:', err);
+    // Render with default values if there's an error
+    res.render('public/donate', {
+      totalDonations: 0,
+      totalDonationCount: 0,
+      totalMilestones: 0,
+      costPerMilestone: 0,
+      milestones: [],
+      chartData: JSON.stringify([]),
+    });
+  }
 });
 
 /**
@@ -943,7 +1321,7 @@ app.get('/participants/:id', requireLogin, async (req, res) => {
         .join('milestone as m', 'pm.milestone_id', 'm.milestone_id')
         .where('pm.participant_id', participant.participant_id)
         .select('m.milestone_id', 'm.milestone_title', 'pm.milestone_date')
-        .orderBy('pm.milestone_date', 'desc'),
+        .orderByRaw('pm.milestone_date DESC NULLS LAST'),
       db('donation')
         .where('participant_id', participant.participant_id)
         .count('* as count')
@@ -967,7 +1345,7 @@ app.get('/participants/:id', requireLogin, async (req, res) => {
       milestones: milestonesForParticipant.map((pm) => ({
         id: pm.milestone_id,
         title: pm.milestone_title,
-        achieved_date_formatted: formatDateShort(pm.milestone_date),
+        achieved_date_formatted: pm.milestone_date ? formatDateShort(pm.milestone_date) : null,
       })),
     };
 
@@ -1176,7 +1554,7 @@ app.post('/participants/:id/milestones', requireManager, async (req, res) => {
     await db('participant_milestone').insert({
       participant_id: participantId,
       milestone_id: milestone_id,
-      milestone_date: achieved_date || new Date().toISOString().slice(0, 10),
+      milestone_date: achieved_date && achieved_date.trim() ? achieved_date.trim() : null,
     });
 
     req.session.success = 'Milestone assigned.';
@@ -1185,6 +1563,100 @@ app.post('/participants/:id/milestones', requireManager, async (req, res) => {
     console.error('Error assigning milestone:', err);
     req.session.error = 'Error assigning milestone.';
     res.redirect(`/participants/${req.params.id}`);
+  }
+});
+
+app.get('/participants/:participant_id/milestones/:milestone_id/edit', requireManager, async (req, res) => {
+  try {
+    const participantId = req.params.participant_id;
+    const milestoneId = req.params.milestone_id;
+
+    const [participantData, milestoneData] = await Promise.all([
+      db('participant').where({ participant_id: participantId }).first(),
+      db('participant_milestone as pm')
+        .join('milestone as m', 'pm.milestone_id', 'm.milestone_id')
+        .where({
+          'pm.participant_id': participantId,
+          'pm.milestone_id': milestoneId,
+        })
+        .select('m.milestone_id', 'm.milestone_title', 'pm.milestone_date')
+        .first(),
+    ]);
+
+    if (!participantData) {
+      req.session.error = 'Participant not found.';
+      return res.redirect('/participants');
+    }
+
+    if (!milestoneData) {
+      req.session.error = 'Milestone assignment not found.';
+      return res.redirect(`/participants/${participantId}`);
+    }
+
+    // Transform data to view-friendly field names
+    const participant = {
+      id: participantData.participant_id,
+      first_name: participantData.participant_first_name,
+      last_name: participantData.participant_last_name,
+    };
+
+    const milestone = {
+      id: milestoneData.milestone_id,
+      title: milestoneData.milestone_title,
+      date: milestoneData.milestone_date ? new Date(milestoneData.milestone_date).toISOString().slice(0, 10) : '',
+    };
+
+    res.render('milestones/edit_date', {
+      participant,
+      milestone,
+    });
+  } catch (err) {
+    console.error('Error loading milestone date edit:', err);
+    req.session.error = 'Error loading page.';
+    res.redirect(`/participants/${req.params.participant_id}`);
+  }
+});
+
+app.post('/participants/:participant_id/milestones/:milestone_id', requireManager, async (req, res) => {
+  try {
+    const participantId = req.params.participant_id;
+    const milestoneId = req.params.milestone_id;
+
+    const participant = await db('participant').where({ participant_id: participantId }).first();
+    if (!participant) {
+      req.session.error = 'Participant not found.';
+      return res.redirect('/participants');
+    }
+
+    const existingMilestone = await db('participant_milestone')
+      .where({
+        participant_id: participantId,
+        milestone_id: milestoneId,
+      })
+      .first();
+
+    if (!existingMilestone) {
+      req.session.error = 'Milestone assignment not found.';
+      return res.redirect(`/participants/${participantId}`);
+    }
+
+    const { achieved_date } = req.body;
+
+    await db('participant_milestone')
+      .where({
+        participant_id: participantId,
+        milestone_id: milestoneId,
+      })
+      .update({
+        milestone_date: achieved_date && achieved_date.trim() ? achieved_date.trim() : null,
+      });
+
+    req.session.success = 'Milestone date updated.';
+    res.redirect(`/participants/${participantId}`);
+  } catch (err) {
+    console.error('Error updating milestone date:', err);
+    req.session.error = 'Error updating milestone date.';
+    res.redirect(`/participants/${req.params.participant_id}`);
   }
 });
 
@@ -1436,6 +1908,7 @@ app.get('/events/admin', requireLogin, async (req, res) => {
       type: e.event_type || 'General',
       location: e.event_location || 'TBD',
       dateFormatted: formatDateShort(e.event_date_start_time),
+      dateTime: e.event_date_start_time, // Raw date-time for client-side filtering
       capacity: e.event_capacity || 0,
     }));
 
@@ -1756,11 +2229,27 @@ app.post('/events', requireManager, async (req, res) => {
 
 app.get('/events/:id', requireLogin, async (req, res) => {
   try {
-    const eventData = await db('event_instance as ei')
-      .join('event as e', 'ei.event_id', 'e.event_id')
-      .where('ei.event_instance_id', req.params.id)
-      .select('ei.*', 'e.event_name', 'e.event_type', 'e.event_description')
-      .first();
+    const [eventData, registrationsData] = await Promise.all([
+      db('event_instance as ei')
+        .join('event as e', 'ei.event_id', 'e.event_id')
+        .where('ei.event_instance_id', req.params.id)
+        .select('ei.*', 'e.event_name', 'e.event_type', 'e.event_description')
+        .first(),
+      db('event_registration as er')
+        .join('participant as p', 'er.participant_id', 'p.participant_id')
+        .where('er.event_instance_id', req.params.id)
+        .select(
+          'p.participant_id',
+          'p.participant_first_name',
+          'p.participant_last_name',
+          'p.participant_email',
+          'er.registration_status',
+          'er.registration_attended_flag',
+          'er.registration_created_at',
+          'er.registration_check_in_time'
+        )
+        .orderBy('er.registration_created_at', 'desc')
+    ]);
 
     if (!eventData) {
       req.session.error = 'Event not found.';
@@ -1782,7 +2271,18 @@ app.get('/events/:id', requireLogin, async (req, res) => {
       end_time_formatted: eventData.event_date_end_time ? formatDateTime(eventData.event_date_end_time) : '',
     };
 
-    res.render('events/instances/show', { event, currentUser: res.locals.currentUser });
+    // Transform registrations for view
+    const registrations = registrationsData.map(reg => ({
+      participant_id: reg.participant_id,
+      name: `${reg.participant_first_name || ''} ${reg.participant_last_name || ''}`.trim() || 'Unknown',
+      email: reg.participant_email || '-',
+      status: reg.registration_status || '-',
+      attended: reg.registration_attended_flag ? 'Yes' : 'No',
+      created_at: reg.registration_created_at ? formatDateTime(reg.registration_created_at) : '-',
+      check_in_time: reg.registration_check_in_time ? formatDateTime(reg.registration_check_in_time) : '-',
+    }));
+
+    res.render('events/instances/show', { event, registrations, currentUser: res.locals.currentUser });
   } catch (err) {
     console.error('Error fetching event:', err);
     req.session.error = 'Error loading event.';
@@ -2472,22 +2972,16 @@ app.get('/donations/new', requireManager, async (req, res) => {
 app.post('/donations', requireManager, async (req, res) => {
   try {
     const { participant_id, amount, date } = req.body;
-    const partId = participant_id ? Number(participant_id) : null;
+    // Use 0 for anonymous donations instead of null (database requires non-null)
+    const partId = participant_id && participant_id.trim() !== '' ? Number(participant_id) : 0;
 
-    // Get the next donation_number for this participant (or null for anonymous)
+    // Get the next donation_number for this participant
+    // Anonymous donations use participant_id = 0
     // The donation table uses composite key (participant_id, donation_number) per ERD
-    let maxDonation;
-    if (partId) {
-      maxDonation = await db('donation')
-        .where({ participant_id: partId })
-        .max('donation_number as max_num')
-        .first();
-    } else {
-      maxDonation = await db('donation')
-        .whereNull('participant_id')
-        .max('donation_number as max_num')
-        .first();
-    }
+    const maxDonation = await db('donation')
+      .where({ participant_id: partId })
+      .max('donation_number as max_num')
+      .first();
     
     const donation_number = (maxDonation?.max_num || 0) + 1;
 

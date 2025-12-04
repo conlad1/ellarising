@@ -177,12 +177,60 @@
     background: #f7f7f7;
   }
 
+  /* Registration Modal Styles */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .modal-overlay.active {
+    display: flex;
+  }
+
+  .modal-content {
+    background: white;
+    border-radius: 12px;
+    padding: 2rem;
+    max-width: 500px;
+    width: 90%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  }
+
+  .modal-header {
+    margin-bottom: 1.5rem;
+  }
+
+  .modal-header h2 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1.5rem;
+  }
+
+  .modal-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+
+  .modal-actions button {
+    flex: 1;
+  }
+
 </style>
 
 <section class="section">
   <div class="section-header">
-    <h1 class="section-title">Upcoming Events</h1>
-    <p class="section-subtitle">
+    <h1 class="section-title" id="eventsTitle">Upcoming Events</h1>
+    <p class="section-subtitle" id="eventsSubtitle">
       Join us at upcoming workshops, summits, and performances.
     </p>
   </div>
@@ -201,6 +249,14 @@
       <div class="form-group">
         <label for="searchEvents">Search</label>
         <input id="searchEvents" type="text" placeholder="Search events...">
+      </div>
+      <div class="form-group">
+        <label for="filterTimeframe">Timeframe</label>
+        <select id="filterTimeframe">
+          <option value="future">Future Events</option>
+          <option value="past">Past Events</option>
+          <option value="all">All Events</option>
+        </select>
       </div>
       <div class="form-group">
         <label for="filterType">Event Type</label>
@@ -234,6 +290,21 @@
       <div class="events-schedule" id="eventsContainer"></div>
     </div>
   <% } %>
+
+  <!-- Registration Modal -->
+  <div id="registrationModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalEventName">Register for Event</h2>
+        <p>Are you an existing participant or new to Ella Rises?</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="registerExisting()">Existing Participant</button>
+        <button class="btn btn-outline" onclick="registerNew()">New Participant</button>
+        <button class="btn btn-text" onclick="closeRegistrationModal()">Cancel</button>
+      </div>
+    </div>
+  </div>
 </section>
 
 <script>
@@ -244,10 +315,31 @@
     const rawEvents = JSON.parse(dataTag.textContent || '[]');
     const eventsContainer = document.getElementById('eventsContainer');
     const noResults = document.getElementById('noResults');
+    const eventsTitle = document.getElementById('eventsTitle');
+    const eventsSubtitle = document.getElementById('eventsSubtitle');
     const searchInput = document.getElementById('searchEvents');
+    const timeframeFilter = document.getElementById('filterTimeframe');
     const typeFilter = document.getElementById('filterType');
     const locationFilter = document.getElementById('filterLocation');
     const timeFilter = document.getElementById('filterTime');
+    
+    function updateHeader(timeframe) {
+      if (timeframe === 'future') {
+        eventsTitle.textContent = 'Upcoming Events';
+        eventsSubtitle.textContent = 'Join us at upcoming workshops, summits, and performances.';
+      } else if (timeframe === 'past') {
+        eventsTitle.textContent = 'Past Events';
+        eventsSubtitle.textContent = 'Browse our past workshops, summits, and performances.';
+      } else {
+        eventsTitle.textContent = 'All Events';
+        eventsSubtitle.textContent = 'Browse all of our workshops, summits, and performances.';
+      }
+    }
+    
+    function getSortOrder(timeframe) {
+      // Future events: ascending, Past/All events: descending
+      return timeframe === 'future';
+    }
 
     function formatDateInfo(dt) {
       if (!dt) return null;
@@ -270,17 +362,16 @@
       };
     }
 
+    const now = new Date();
     const events = rawEvents.map(ev => {
       const di = formatDateInfo(ev.dateTime);
+      const isFuture = di && di.raw > now;
       return {
         ...ev,
         dateInfo: di,
-        dateKey: di ? di.dateKey : 'TBD'
+        dateKey: di ? di.dateKey : 'TBD',
+        isFuture: isFuture
       };
-    }).sort((a, b) => {
-      if (!a.dateInfo) return 1;
-      if (!b.dateInfo) return -1;
-      return a.dateInfo.raw - b.dateInfo.raw;
     });
 
     // populate filter dropdowns
@@ -335,7 +426,7 @@
       return map;
     }
 
-    function render(list) {
+    function render(list, sortAscending = true) {
       if (!list.length) {
         eventsContainer.innerHTML = '';
         noResults.style.display = 'block';
@@ -347,7 +438,13 @@
       const keys = Object.keys(grouped).sort((a, b) => {
         if (a === 'TBD') return 1;
         if (b === 'TBD') return -1;
-        return new Date(a) - new Date(b);
+        const dateA = new Date(a);
+        const dateB = new Date(b);
+        if (sortAscending) {
+          return dateA - dateB;
+        } else {
+          return dateB - dateA;
+        }
       });
 
       let html = '';
@@ -378,6 +475,10 @@
             `
             : '';
 
+          const registerButton = ev.isFuture && ev.id
+            ? `<button class="btn btn-small btn-primary" onclick="openRegistrationModal(${ev.id}, '${escapeHtml(ev.name.replace(/'/g, "\\'"))}')" style="margin-top: 0.75rem;">Register</button>`
+            : '';
+          
           html += `
             <div class="event-item">
               <div class="event-content">
@@ -394,6 +495,7 @@
                 ${ev.description
                   ? `<p class="event-description">${escapeHtml(ev.description)}</p>`
                   : ''}
+                ${registerButton}
               </div>
               ${imgHtml}
             </div>
@@ -408,11 +510,12 @@
 
     function applyFilters() {
       const q = (searchInput.value || '').toLowerCase();
+      const timeframeVal = timeframeFilter.value || 'future';
       const typeVal = (typeFilter.value || '').toLowerCase();
       const locVal = (locationFilter.value || '').toLowerCase();
       const timeVal = (timeFilter.value || '').toLowerCase();
 
-      const filtered = events.filter(ev => {
+      let filtered = events.filter(ev => {
         const name = (ev.name || '').toLowerCase();
         const type = (ev.type || '').toLowerCase();
         const loc = (ev.location || '').toLowerCase();
@@ -426,25 +529,84 @@
           loc.includes(q) ||
           desc.includes(q);
 
+        const matchesTimeframe = 
+          timeframeVal === 'all' ||
+          (timeframeVal === 'future' && ev.isFuture) ||
+          (timeframeVal === 'past' && !ev.isFuture);
+
         const matchesType = !typeVal || type === typeVal;
         const matchesLoc = !locVal || loc === locVal;
         const matchesTime = !timeVal || tod === timeVal;
 
-        return matchesSearch && matchesType && matchesLoc && matchesTime;
+        return matchesSearch && matchesTimeframe && matchesType && matchesLoc && matchesTime;
       });
 
-      render(filtered);
+      // Sort based on timeframe: future = ascending, past/all = descending
+      const sortAscending = getSortOrder(timeframeVal);
+      filtered.sort((a, b) => {
+        if (!a.dateInfo) return 1;
+        if (!b.dateInfo) return -1;
+        
+        if (sortAscending) {
+          return a.dateInfo.raw - b.dateInfo.raw;
+        } else {
+          return b.dateInfo.raw - a.dateInfo.raw;
+        }
+      });
+
+      render(filtered, sortAscending);
     }
 
-    // initial render
-    render(events);
+    // Initialize header for default timeframe (future)
+    updateHeader('future');
+    
+    // initial render - default to future events
+    applyFilters();
 
     // listeners
     searchInput.addEventListener('input', applyFilters);
+    timeframeFilter.addEventListener('change', (e) => {
+      updateHeader(e.target.value);
+      applyFilters();
+    });
     typeFilter.addEventListener('change', applyFilters);
     locationFilter.addEventListener('change', applyFilters);
     timeFilter.addEventListener('change', applyFilters);
   })();
+
+  // Registration Modal Functions
+  let currentEventId = null;
+  let currentEventName = '';
+
+  function openRegistrationModal(eventId, eventName) {
+    currentEventId = eventId;
+    currentEventName = eventName;
+    document.getElementById('modalEventName').textContent = `Register for ${eventName}`;
+    document.getElementById('registrationModal').classList.add('active');
+  }
+
+  function closeRegistrationModal() {
+    document.getElementById('registrationModal').classList.remove('active');
+    currentEventId = null;
+    currentEventName = '';
+  }
+
+  function registerExisting() {
+    if (!currentEventId) return;
+    window.location.href = `/events/${currentEventId}/register?type=existing`;
+  }
+
+  function registerNew() {
+    if (!currentEventId) return;
+    window.location.href = `/events/${currentEventId}/register?type=new`;
+  }
+
+  // Close modal when clicking outside
+  document.getElementById('registrationModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeRegistrationModal();
+    }
+  });
 </script>
 
 <%- include('../partials/footer') %>

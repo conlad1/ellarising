@@ -1,0 +1,29 @@
+<%- include('../partials/header', { title: 'Register for Event', currentUser, currentPath: '/events' }) %>
+
+<section class="section">
+  <a href="/events" class="btn btn-text" style="margin-bottom: 1rem; display: inline-block;">← Back to Events</a>
+  <div class="section-header">
+    <h1 class="section-title">Register for <%= eventInstance.name %></h1>
+    <p class="section-subtitle">Enter your email to register as an existing participant.</p>
+  </div>
+
+  <div class="card card-narrow">
+    <form action="/events/<%= eventInstance.id %>/register/existing" method="POST" class="form">
+      <div class="form-group">
+        <label for="email">Email Address</label>
+        <input id="email" name="email" type="email" required placeholder="your.email@example.com">
+        <p style="font-size: 0.9rem; color: #666; margin-top: 0.5rem;">
+          Enter the email address associated with your participant account.
+        </p>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-primary">Register</button>
+        <a href="/events" class="btn btn-text">Cancel</a>
+      </div>
+    </form>
+  </div>
+</section>
+
+<%- include('../partials/footer') %>
+
