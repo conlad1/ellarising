@@ -10,9 +10,13 @@
     <% if (currentUser && currentUser.role === 'admin') { %>
       <div>
         <a href="/milestones/<%= milestone.id %>/edit" class="btn btn-outline">Edit</a>
-        <form action="/milestones/<%= milestone.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
-          <button class="btn btn-outline link-danger" onclick="return confirm('Delete this milestone?');">Delete</button>
-        </form>
+        <% if (milestone.participants_count > 0) { %>
+          <span class="btn btn-outline muted" style="cursor: not-allowed; opacity: 0.6; margin-left: 0.5rem;" title="Cannot delete milestone assigned to participants (assigned to <%= milestone.participants_count %> participant<%= milestone.participants_count > 1 ? 's' : '' %>)">Delete</span>
+        <% } else { %>
+          <form action="/milestones/<%= milestone.id %>/delete" method="POST" class="inline-form" style="display: inline-block; margin-left: 0.5rem;">
+            <button class="btn btn-outline link-danger" onclick="return confirm('Delete this milestone?');">Delete</button>
+          </form>
+        <% } %>
       </div>
     <% } %>
   </div>
