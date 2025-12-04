@@ -87,10 +87,6 @@ p {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.navbar-admin .logo-text {
-  color: #ffffff;
-}
-
 .navbar-admin .nav-link {
   color: rgba(255, 255, 255, 0.9);
 }
@@ -122,6 +118,45 @@ p {
 
 .navbar-admin .nav-separator {
   background: rgba(255, 255, 255, 0.2);
+}
+
+/* Admin Sub-Navigation */
+.admin-subnav {
+  position: sticky;
+  top: 65px; /* Position below the main navbar */
+  z-index: 49;
+  background: #000000;
+  border-bottom: 2px solid var(--er-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.admin-subnav-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.75rem;
+  flex-wrap: wrap;
+}
+
+.admin-subnav-link {
+  font-size: 0.9rem;
+  color: var(--er-primary);
+  font-weight: 500;
+  text-decoration: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  transition: all 0.2s ease;
+}
+
+.admin-subnav-link:hover {
+  color: #ffffff;
+  background: rgba(242, 156, 159, 0.15);
+}
+
+.admin-subnav-link.active {
+  color: #ffffff;
+  background: var(--er-primary);
 }
 
 .navbar-admin .btn-outline {
@@ -197,23 +232,20 @@ p {
   text-decoration: none;
 }
 
-.logo-mark {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, var(--er-primary), var(--er-accent));
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 0.85rem;
+.logo-image {
+  height: 40px;
+  width: auto;
+  object-fit: contain;
 }
 
 .logo-text {
   font-weight: 600;
   font-size: 1rem;
   color: var(--er-dark);
+}
+
+.navbar-admin .logo-text {
+  color: #ffffff;
 }
 
 .nav-link {
