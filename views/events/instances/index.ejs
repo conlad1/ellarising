@@ -72,6 +72,7 @@
           <th>Type</th>
           <th>Date</th>
           <th>Location</th>
+          <th>Registrations</th>
           <th>Capacity</th>
           <th class="table-actions">Actions</th>
         </tr>
@@ -83,12 +84,14 @@
               data-type="<%= (e.type || '').toLowerCase() %>"
               data-date="<%= (e.dateFormatted || '').toLowerCase() %>"
               data-location="<%= (e.location || '').toLowerCase() %>"
+              data-registrations="<%= (e.registrations || 0).toString().toLowerCase() %>"
               data-capacity="<%= (e.capacity || '').toString().toLowerCase() %>"
               data-datetime="<%= e.dateTime || '' %>">
             <td><%= e.name %></td>
             <td><%= e.type %></td>
             <td><%= e.dateFormatted %></td>
             <td><%= e.location %></td>
+            <td><%= e.registrations || 0 %></td>
             <td><%= e.capacity || '-' %></td>
             <td class="table-actions">
               <a href="/events/<%= e.id %>" class="link-small">View/edit record details</a>
@@ -185,6 +188,7 @@
             <td>${escapeHtml(e.type)}</td>
             <td>${escapeHtml(e.dateFormatted)}</td>
             <td>${escapeHtml(e.location)}</td>
+            <td>${e.registrations || 0}</td>
             <td>${e.capacity || '-'}</td>
             <td class="table-actions">
               <a href="/events/${e.id}" class="link-small">View/edit record details</a>
@@ -210,6 +214,7 @@
         const type = (ev.type || '').toLowerCase();
         const loc = (ev.location || '').toLowerCase();
         const date = (ev.dateFormatted || '').toLowerCase();
+        const registrations = (ev.registrations || 0).toString().toLowerCase();
         const capacity = (ev.capacity || '').toString().toLowerCase();
         const tod = ev.dateInfo ? timeOfDay(ev.dateInfo.hour) : '';
 
@@ -219,6 +224,7 @@
           type.includes(q) ||
           loc.includes(q) ||
           date.includes(q) ||
+          registrations.includes(q) ||
           capacity.includes(q);
 
         const matchesTimeframe = 
