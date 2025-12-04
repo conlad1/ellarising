@@ -1188,6 +1188,33 @@ app.post('/participants/:id/milestones', requireManager, async (req, res) => {
   }
 });
 
+app.post('/participants/:participant_id/milestones/:milestone_id/delete', requireManager, async (req, res) => {
+  try {
+    const participantId = req.params.participant_id;
+    const milestoneId = req.params.milestone_id;
+
+    const participant = await db('participant').where({ participant_id: participantId }).first();
+    if (!participant) {
+      req.session.error = 'Participant not found.';
+      return res.redirect('/participants');
+    }
+
+    await db('participant_milestone')
+      .where({
+        participant_id: participantId,
+        milestone_id: milestoneId,
+      })
+      .del();
+
+    req.session.success = 'Milestone removed from participant.';
+    res.redirect(`/participants/${participantId}`);
+  } catch (err) {
+    console.error('Error removing milestone from participant:', err);
+    req.session.error = 'Error removing milestone.';
+    res.redirect(`/participants/${req.params.participant_id}`);
+  }
+});
+
 // =======================
 // MILESTONES MAINTENANCE
 // =======================
@@ -1261,7 +1288,14 @@ app.post('/milestones', requireManager, async (req, res) => {
 
 app.get('/milestones/:id', requireLogin, async (req, res) => {
   try {
-    const milestoneData = await db('milestone').where({ milestone_id: req.params.id }).first();
+    const [milestoneData, participantCount] = await Promise.all([
+      db('milestone').where({ milestone_id: req.params.id }).first(),
+      db('participant_milestone')
+        .where('milestone_id', req.params.id)
+        .count('* as count')
+        .first(),
+    ]);
+
     if (!milestoneData) {
       req.session.error = 'Milestone not found.';
       return res.redirect('/milestones');
@@ -1272,6 +1306,7 @@ app.get('/milestones/:id', requireLogin, async (req, res) => {
       id: milestoneData.milestone_id,
       title: milestoneData.milestone_title,
       description: milestoneData.milestone_description,
+      participants_count: parseInt(participantCount?.count) || 0,
     };
 
     res.render('milestones/show', { milestone });
@@ -1331,8 +1366,20 @@ app.post('/milestones/:id', requireManager, async (req, res) => {
 app.post('/milestones/:id/delete', requireManager, async (req, res) => {
   try {
     const id = req.params.id;
-      await db('participant_milestone').where('milestone_id', id).del();
-      await db('milestone').where({ milestone_id: id }).del();
+    
+    // Check if milestone is assigned to any participants
+    const participantCount = await db('participant_milestone')
+      .where('milestone_id', id)
+      .count('* as count')
+      .first();
+    
+    if (participantCount && parseInt(participantCount.count) > 0) {
+      req.session.error = 'Cannot delete milestone. This milestone is assigned to participants. Please remove it from all participants before deleting.';
+      return res.redirect('/milestones');
+    }
+    
+    // If no participants assigned, proceed with deletion
+    await db('milestone').where({ milestone_id: id }).del();
     req.session.success = 'Milestone deleted.';
     res.redirect('/milestones');
   } catch (err) {
@@ -1937,13 +1984,20 @@ app.get('/surveys', requireLogin, async (req, res) => {
 
 app.get('/surveys/new', requireManager, async (req, res) => {
   try {
-    const [participants, events] = await Promise.all([
+    const [participantsRaw, events] = await Promise.all([
       db('participant').select('participant_id as id', 'participant_first_name', 'participant_last_name').orderBy('participant_last_name'),
       db('event_instance as ei')
         .join('event as e', 'ei.event_id', 'e.event_id')
         .select('ei.event_instance_id as id', 'e.event_name as name', 'ei.event_date_start_time')
         .orderBy('ei.event_date_start_time', 'desc')
     ]);
+    
+    // Transform participants for dropdown
+    const participants = participantsRaw.map(p => ({
+      id: p.id,
+      first_name: p.participant_first_name,
+      last_name: p.participant_last_name,
+    }));
     
     res.render('surveys/form', {
       formTitle: 'Record Survey',
