@@ -475,9 +475,14 @@
             `
             : '';
 
-          const registerButton = ev.isFuture && ev.id
-            ? `<button class="btn btn-small btn-primary" onclick="openRegistrationModal(${ev.id}, '${escapeHtml(ev.name.replace(/'/g, "\\'"))}')" style="margin-top: 0.75rem;">Register</button>`
-            : '';
+          let registerButton = '';
+          if (ev.isFuture && ev.id) {
+            if (ev.isFull) {
+              registerButton = `<p style="margin-top: 0.75rem; color: #d32f2f; font-weight: 600; font-size: 0.9rem;">Event at Full Capacity</p>`;
+            } else {
+              registerButton = `<button class="btn btn-small btn-primary" onclick="openRegistrationModal(${ev.id}, '${escapeHtml(ev.name.replace(/'/g, "\\'"))}')" style="margin-top: 0.75rem;">Register</button>`;
+            }
+          }
           
           html += `
             <div class="event-item">
