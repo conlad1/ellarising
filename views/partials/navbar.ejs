@@ -63,7 +63,7 @@
   </div>
 </nav>
 
-<% if (isAdminPage) { %>
+<% if (currentUser) { %>
 <nav class="admin-subnav">
   <div class="admin-subnav-inner">
     <a href="/dashboard" class="admin-subnav-link <%= isActiveLink('/dashboard', current) ? 'active' : '' %>">Dashboard</a>
