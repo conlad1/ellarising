@@ -11,6 +11,25 @@
   <link rel="stylesheet" href="/css/main.css">
   <!-- Google Font (similar feel) -->
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <!-- Dynamic navbar height calculation -->
+  <script>
+    // Calculate actual navbar height and set CSS variable for subnav positioning
+    // Use 'load' event to ensure all resources (fonts, images, stylesheets) are loaded
+    function calculateNavbarHeight() {
+      const navbar = document.querySelector('.navbar');
+      if (navbar) {
+        const height = navbar.offsetHeight;
+        document.documentElement.style.setProperty('--navbar-height', height + 'px');
+      }
+    }
+    
+    // If page is already loaded, calculate immediately; otherwise wait for load event
+    if (document.readyState === 'complete') {
+      calculateNavbarHeight();
+    } else {
+      window.addEventListener('load', calculateNavbarHeight);
+    }
+  </script>
 </head>
 <body>
   <header>

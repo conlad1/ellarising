@@ -13,6 +13,7 @@
   --er-card-bg: #ffffff;
   --er-border-radius: 16px;
   --er-shadow: 0 8px 24px rgba(15, 14, 23, 0.06);
+  --navbar-height: 65px; /* Matches original positioning - dynamically calculated by JS on load */
   --er-radius-pill: 999px;
   --er-max-width: 1100px;
 }
@@ -79,6 +80,8 @@ p {
   padding: 0.75rem 1.75rem;
   background: #ffffff;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.03);
+  min-height: var(--navbar-height);
+  box-sizing: border-box;
 }
 
 .navbar-admin {
@@ -123,8 +126,8 @@ p {
 /* Admin Sub-Navigation */
 .admin-subnav {
   position: sticky;
-  top: 65px; /* Position below the main navbar */
-  z-index: 49;
+  top: var(--navbar-height); /* Position below the main navbar using dynamic height */
+  z-index: 51; /* Higher than navbar to ensure it stays on top when scrolling */
   background: #000000;
   border-bottom: 2px solid var(--er-primary);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
