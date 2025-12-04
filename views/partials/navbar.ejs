@@ -20,7 +20,7 @@
   const current = typeof currentPath !== 'undefined' ? currentPath : '';
   
   // Check if we're on an admin page
-  const isAdminPage = current && (
+  const isAdminPage = current && currentUser && (
     current.startsWith('/dashboard') ||
     current.startsWith('/participants') ||
     current.startsWith('/events/admin') ||
@@ -29,16 +29,13 @@
     current.startsWith('/surveys') ||
     current.startsWith('/milestones') ||
     current.startsWith('/donations') ||
-    current.startsWith('/users') ||
-    current.startsWith('/login')
+    current.startsWith('/users')
   );
-  
-  const navbarClass = isAdminPage ? 'navbar navbar-admin' : 'navbar';
 %>
-<nav class="<%= navbarClass %>">
+<nav class="navbar">
   <div class="navbar-left">
     <a href="/" class="navbar-logo">
-      <span class="logo-mark">ER</span>
+      <img src="/images/ellariseslogo.png" alt="Ella Rises" class="logo-image">
       <span class="logo-text">Ella Rises</span>
     </a>
   </div>
@@ -49,17 +46,6 @@
     <a href="/events" class="nav-link <%= isActiveLink('/events', current) ? 'active' : '' %>">Events</a>
     <a href="/donate" class="nav-link <%= isActiveLink('/donate', current) ? 'active' : '' %>">Donate</a>
     <a href="/impact" class="nav-link <%= isActiveLink('/impact', current) ? 'active' : '' %>">Impact</a>
-
-    <% if (currentUser) { %>
-      <span class="nav-separator"></span>
-      <a href="/dashboard" class="nav-link <%= isActiveLink('/dashboard', current) ? 'active' : '' %>">Dashboard</a>
-      <a href="/participants" class="nav-link <%= isActiveLink('/participants', current) ? 'active' : '' %>">Participants</a>
-      <a href="/events/admin" class="nav-link <%= isActiveLink('/events/admin', current) ? 'active' : '' %>">Events Admin</a>
-      <a href="/surveys" class="nav-link <%= isActiveLink('/surveys', current) ? 'active' : '' %>">Surveys</a>
-      <a href="/milestones" class="nav-link <%= isActiveLink('/milestones', current) ? 'active' : '' %>">Milestones</a>
-      <a href="/donations" class="nav-link <%= isActiveLink('/donations', current) ? 'active' : '' %>">Donations</a>
-      <a href="/users" class="nav-link <%= isActiveLink('/users', current) ? 'active' : '' %>">Users</a>
-    <% } %>
   </div>
 
   <div class="navbar-right">
@@ -76,3 +62,17 @@
     <% } %>
   </div>
 </nav>
+
+<% if (isAdminPage) { %>
+<nav class="admin-subnav">
+  <div class="admin-subnav-inner">
+    <a href="/dashboard" class="admin-subnav-link <%= isActiveLink('/dashboard', current) ? 'active' : '' %>">Dashboard</a>
+    <a href="/participants" class="admin-subnav-link <%= isActiveLink('/participants', current) ? 'active' : '' %>">Participants</a>
+    <a href="/events/admin" class="admin-subnav-link <%= isActiveLink('/events/admin', current) ? 'active' : '' %>">Events Admin</a>
+    <a href="/surveys" class="admin-subnav-link <%= isActiveLink('/surveys', current) ? 'active' : '' %>">Surveys</a>
+    <a href="/milestones" class="admin-subnav-link <%= isActiveLink('/milestones', current) ? 'active' : '' %>">Milestones</a>
+    <a href="/donations" class="admin-subnav-link <%= isActiveLink('/donations', current) ? 'active' : '' %>">Donations</a>
+    <a href="/users" class="admin-subnav-link <%= isActiveLink('/users', current) ? 'active' : '' %>">Users</a>
+  </div>
+</nav>
+<% } %>
